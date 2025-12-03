@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
+.login-box {
+  width: 800px;
+  height: 500px;
+  display: flex;
+  position: relative;
+  background-color: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.login-forms {
+  width: 100%;
+  display: flex;
+  position: relative;
+  z-index: 2;
+}
+
+.login-forms form {
+  width: 100%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: 0.5s ease-in-out;
+}
+
+.sign-in {
+  transform: translateX(0);
+}
+
+.sign-up {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.login-box.toggle .sign-in {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.login-box.toggle .sign-up {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.login-forms h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.login-forms span {
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.input-box {
+  width: 300px;
+  height: 40px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 15px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.input-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background-color: transparent;
+}
+
+.input-box input::placeholder {
+  color: #888;
+}
+
+.button {
+  width: 170px;
+  height: 45px;
+  font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #ff0000;
+  color: white;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+.button:hover {
+  background-color: #ff0000dc;
+}
+
+.button.outline {
+  background-color: transparent;
+  border: 2px solid white;
+  color: white;
+}
+
+/* PANEL DE BIENVENIDA */
+.welcome-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background-color: #ff0000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: transform 0.5s ease-in-out, border-radius 0.5s ease-in-out;
+  border-radius: 50% 0 0 50%;
+  z-index: 1;
+}
+
+.login-box.toggle .welcome-panel {
+  transform: translateX(-100%);
+  border-radius: 0 50% 50% 0;
+  background-color: #ff0000;
+}
+
+.welcome {
+  position: absolute;
+  text-align: center;
+  color: white;
+  padding: 0 50px;
+  transition: transform 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.welcome-sign-in {
+  transform: translateX(100%);
+}
+
+.welcome-sign-up {
+  transform: translateX(0);
+}
+
+.login-box.toggle .welcome-sign-in {
+  transform: translateX(0);
+}
+
+.login-box.toggle .welcome-sign-up {
+  transform: translateX(-100%);
+}
+
+.welcome h3 {
+  font-size: 32px;
+}
+
+.welcome p {
+  font-size: 14px;
+  max-width: 220px;
+}
+/* 🔧 Solución rápida y forzada */
+.login-box {
+  position: relative;
+  z-index: 1;
+}
+
+.login-forms {
+  position: relative;
+  z-index: 2;
+}
+
+.welcome-panel {
+  z-index: 0 !important;
+  pointer-events: none; /* Desactiva clics para que no bloquee el login */
+}
+
+.login-forms form {
+  z-index: 2;
+  background-color: white;
+}
+
