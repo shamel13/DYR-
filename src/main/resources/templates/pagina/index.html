@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DYR - Chaquetas</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- CSS separado -->
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="bg-gray-50 font-[Poppins]">
+
+  <!-- NAVBAR -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center text-2xl font-bold text-gray-800">
+        <i class="fa-solid fa-shirt text-red-500 mr-2"></i>
+        <span>DYR</span>
+      </div>
+      <nav class="flex-1 flex justify-center gap-10">
+        <a th:href="@{/pagina/index}" class="text-gray-700 hover:text-red-500 transition">Inicio</a>
+        <a th:href="@{/pagina/acerca}" class="text-gray-700 hover:text-red-500 transition">Acerca de</a>
+        <a th:href="@{/pagina/catalogo}" class="text-gray-700 hover:text-red-500 transition">Productos</a>
+        <a th:href="@{/auth/login}" class="text-gray-700 hover:text-red-500 transition">Iniciar sesión</a>
+      </nav>
+      <div class="space-x-4 flex items-center">
+        <!-- Aquí puedes usar Thymeleaf con Spring Security para mostrar usuario autenticado -->
+        <a th:href="@{/auth/login}" class="text-gray-700 hover:text-red-500 transition">
+          <i class="fa-solid fa-user"></i> Iniciar sesión
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- CARRUSEL -->
+  <section class="relative overflow-hidden">
+    <div class="carrusel relative w-full h-[80vh] overflow-hidden">
+      <div class="slides flex transition-transform duration-700 ease-in-out">
+
+        <!-- SLIDE 1 -->
+        <div class="relative w-full h-[80vh] flex-shrink-0">
+          <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=1887&q=80"
+               class="w-full h-full object-cover absolute inset-0 z-0" />
+          <div class="absolute inset-0 bg-black opacity-40 z-10"></div>
+          <div class="absolute z-20 text-white left-10 bottom-20 md:left-20 md:bottom-1/4 max-w-md fade-in">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Colección Otoño/Invierno</h2>
+            <p class="text-lg mb-6">Descubre nuestras exclusivas chaquetas de cuero diseñadas para la mujer moderna.</p>
+            <button th:onclick="'location.href=\'' + @{/pagina/catalogo} + '\''" 
+                    class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium transition">
+              Ver Colección
+            </button>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="relative w-full h-[80vh] flex-shrink-0">
+          <img src="https://images.unsplash.com/photo-1539533018447-63fcce2678e3?auto=format&fit=crop&w=1887&q=80"
+               class="w-full h-full object-cover absolute inset-0 z-0" />
+          <div class="absolute inset-0 bg-black opacity-40 z-10"></div>
+          <div class="absolute z-20 text-white right-10 bottom-20 md:right-20 md:bottom-1/4 max-w-md text-right fade-in">
+            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium mb-3 inline-block">30% OFF</span>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Oferta Especial</h2>
+            <p class="text-lg mb-6">Aprovecha nuestros descuentos en chaquetas seleccionadas. Edición limitada.</p>
+            <button class="bg-white hover:bg-gray-200 text-black px-6 py-3 rounded-full font-medium transition">
+              Comprar Ahora
+            </button>
+          </div>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div class="relative w-full h-[80vh] flex-shrink-0">
+          <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=1887&q=80"
+               class="w-full h-full object-cover absolute inset-0 z-0" />
+          <div class="absolute inset-0 bg-black opacity-40 z-10"></div>
+          <div class="absolute z-20 text-white left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center fade-in">
+            <span class="bg-white text-black px-3 py-1 rounded-full text-sm font-medium mb-3 inline-block">NOVEDAD</span>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Línea Premium</h2>
+            <p class="text-lg mb-6">Cuero italiano de primera calidad. Artesanía excepcional.</p>
+            <button class="bg-transparent hover:bg-white hover:text-black border-2 border-white text-white px-6 py-3 rounded-full font-medium transition">
+              Descubrir Más
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATÁLOGO DESTACADO -->
+  <section class="py-16 bg-white">
+    <div class="container mx-auto px-6">
+      <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">Catálogo Destacado</h2>
+      <div class="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Tarjetas estáticas (puedes luego iterar con Thymeleaf si vienen de BD) -->
+        <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1520975661595-6453be3f7070?auto=format&fit=crop&w=800&q=80" alt="Chaqueta 1" class="w-full h-64 sm:h-48 object-cover">
+          <div class="p-5">
+            <h3 class="text-xl font-semibold text-gray-800">Chaqueta Elegante</h3>
+            <p class="text-red-600 text-lg font-bold mt-2">$180.000</p>
+          </div>
+        </div>
+        <!-- Más tarjetas... -->
+      </div>
+      <div class="mt-12 text-center">
+        <a th:href="@{/pagina/catalogo}" class="inline-block bg-black text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-800 transition">
+          Ver todo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFORMACIÓN DE LA EMPRESA -->
+  <section class="bg-white py-20">
+    <div class="container mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
+      <div class="w-full lg:w-1/2">
+        <img src="img/chaqueta.webp" alt="atras" loading="lazy">
+      </div>
+      <div class="w-full lg:w-1/2">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Conoce DYR</h2>
+        <p class="text-gray-600 text-lg leading-relaxed mb-4">
+          En <span class="text-red-500 font-semibold">DYR</span> creemos que cada prenda cuenta una historia.
+        </p>
+        <a th:href="@{/pagina/acerca}" class="inline-block bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-medium transition">
+          Saber más
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="container mx

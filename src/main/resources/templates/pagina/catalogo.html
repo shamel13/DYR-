@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catálogo - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="font-sans bg-white text-gray-800">
+
+  <!-- Navbar -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <a th:href="@{/pagina/index}" class="text-2xl font-bold flex items-center gap-2 text-gray-800">
+        <i class="fa-solid fa-shirt text-red-500"></i> DYR
+      </a>
+      <nav class="flex-1 flex justify-center gap-10">
+        <a th:href="@{/pagina/index}" class="text-gray-700 hover:text-red-500 transition">Inicio</a>
+        <a th:href="@{/pagina/acerca}" class="text-gray-700 hover:text-red-500 transition">Acerca de</a>
+        <a th:href="@{/pagina/catalogo}" class="text-gray-700 hover:text-red-500 transition">Productos</a>
+        <a th:href="@{/auth/login}" class="text-gray-700 hover:text-red-500 transition">Iniciar sesión</a>
+      </nav>
+      <div class="space-x-4 flex items-center">
+        <!-- Aquí puedes integrar Spring Security para mostrar usuario autenticado -->
+        <a th:href="@{/auth/login}" class="text-gray-700 hover:text-red-500 transition">
+          <i class="fa-solid fa-user"></i> Iniciar sesión
+        </a>
+        <a href="#"><i class="fa-solid fa-magnifying-glass hover:text-red-500 transition"></i></a>
+        <div class="relative">
+          <i class="fas fa-shopping-bag text-xl cursor-pointer hover:text-red-500" onclick="toggleCart()"></i>
+          <span id="cart-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Productos -->
+  <section class="py-12 px-4 max-w-7xl mx-auto grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div th:each="producto : ${productos}" class="product bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition">
+      <img th:src="${producto.imagen != null ? producto.imagen : '/img/default.png'}" 
+           th:alt="${producto.nombre}" class="w-full h-64 object-cover">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1" th:text="${producto.nombre}"></h3>
+        <p class="text-orange-600 font-bold mb-2" th:text="'$' + ${#numbers.formatInteger(producto.precio, 0, 'POINT')}"></p>
+
+        <div th:if="${producto.inventario != null and producto.inventario.stock_actual > 0}">
+          <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm w-full"
+                  th:onclick="'addToCart(\'' + ${producto.nombre} + '\',' + ${producto.precio} + ',\'' + (${producto.imagen} != null ? producto.imagen : '/img/default.png') + '\')'">
+            Agregar al carrito
+          </button>
+        </div>
+        <span th:if="${producto.inventario == null or producto.inventario.stock_actual <= 0}" class="text-gray-500 text-sm">Agotado</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-green-600 text-white py-2 px-4 rounded shadow z-50">
+    Producto agregado al carrito
+  </div>
+
+  <!-- Panel del Carrito -->
+  <div id="cart-panel" class="cart-panel hidden fixed top-0 right-0 w-96 h-full bg-white shadow-xl z-50 flex flex-col">
+    <div class="flex items-center justify-between p-4 border-b bg-red-500 text-white">
+      <h2 class="text-xl font-bold">🛒 Tu Carrito</h2>
+      <button onclick="toggleCart()" class="hover:text-gray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <p class="text-gray-500 text-sm">Tu carrito está vacío.</p>
+    </div>
+    <div class="p-4 border-t bg-gray-50">
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-semibold text-lg">Total:</span>
+        <span id="cart-total" class="font-bold text-red-600 text-lg">$0</span>
+      </div>
+      <a th:href="@{/formularios/compra}" 
+         class="block text-center bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded font-medium transition">
+        Finalizar compra
+      </a>
+    </div>
+  </div>
+
+  <script>
+   let cart = [];
+
+   function addToCart(nombre, precio, imagen) {
+     cart.push({ nombre, precio, imagen, cantidad: 1 });
+     updateCart();
+     showToast();
+   }
+
+   function updateCart() {
+     const cartItems = document.getElementById("cart-items");
+     const cartCount = document.getElementById("cart-count");
+     const cartTotal = document.getElementById("cart-total");
+
+     cartItems.innerHTML = "";
+     let total = 0;
+
+     if (cart.length === 0) {
+       cartItems.innerHTML = `<p class="text-gray-500 text-sm">Tu carrito está vacío.</p>`;
+     } else {
+       cart.forEach(item => {
+         total += item.precio * item.cantidad;
+         cartItems.innerHTML += `
+           <div class="flex items-center gap-4 bg-white shadow rounded-lg p-3 mb-2">
+             <img src="${item.imagen}" alt="${item.nombre}" class="w-16 h-16 object-cover rounded">
+             <div class="flex-1">
+               <h3 class="font-semibold text-sm">${item.nombre}</h3>
+               <p class="text-red-500 font-bold text-sm">$${item.precio.toLocaleString()}</p>
+               <p class="text-gray-600 text-xs">Cantidad: ${item.cantidad}</p>
+             </div>
+           </div>
+         `;
+       });
+     }
+
+     cartCount.innerText = cart.length;
+     cartTotal.innerText = `$${total.toLocaleString()}`;
+   }
+
+   function toggleCart() {
+     document.getElementById("cart-panel").classList.toggle("hidden");
+   }
+
+   function showToast() {
+     const toast = document.getElementById("toast");
+     toast.classList.remove("hidden");
+     setTimeout(() => toast.classList.add("hidden"), 2000);
+   }
+  </script>
+</body>
+</html>
