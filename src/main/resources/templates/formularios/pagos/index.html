@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Pasarela de Pagos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-100 p-6">
+
+<div class="mb-6 flex justify-between items-center">
+  <a th:href="@{/dashboard/home}" 
+     class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition">
+    ← Volver
+  </a>
+  <a th:href="@{/pagos/nuevo}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">
+    <i class="fas fa-plus mr-2"></i> Nuevo Pago
+  </a>
+</div>
+
+<h1 class="text-2xl font-bold mb-4">💳 Gestión de Pagos</h1>
+
+<!-- Alertas -->
+<div th:if="${param.success}" class="bg-green-100 text-green-700 p-3 rounded mb-4" th:text="${param.success}"></div>
+<div th:if="${param.error}" class="bg-red-100 text-red-700 p-3 rounded mb-4" th:text="${param.error}"></div>
+
+<!-- Filtros -->
+<div class="bg-white p-4 rounded shadow mb-6">
+  <h2 class="text-lg font-bold mb-4">Filtros</h2>
+  <form method="get" th:action="@{/pagos}" class="grid grid-cols-1 md:grid-cols-6 gap-3">
+    <div>
+      <label class="block text-sm font-medium mb-1">Método</label>
+      <select name="metodo" class="w-full border rounded px-3 py-2">
+        <option value="">Todos</option>
+        <option th:value="'Tarjeta'" th:selected="${param.metodo == 'Tarjeta'}">Tarjeta</option>
+        <option th:value="'PayPal'" th:selected="${param.metodo == 'PayPal'}">PayPal</option>
+        <option th:value="'Transferencia'" th:selected="${param.metodo == 'Transferencia'}">Transferencia</option>
+        <option th:value="'Efectivo'" th:selected="${param.metodo == 'Efectivo'}">Efectivo</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Estado</label>
+      <select name="estado" class="w-full border rounded px-3 py-2">
+        <option value="">Todos</option>
+        <option th:value="'Pendiente'" th:selected="${param.estado == 'Pendiente'}">Pendiente</option>
+        <option th:value="'Procesando'" th:selected="${param.estado == 'Procesando'}">Procesando</option>
+        <option th:value="'Completado'" th:selected="${param.estado == 'Completado'}">Completado</option>
+        <option th:value="'Fallido'" th:selected="${param.estado == 'Fallido'}">Fallido</option>
+        <option th:value="'Reembolsado'" th:selected="${param.estado == 'Reembolsado'}">Reembolsado</option>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Monto Mínimo</label>
+      <input type="number" name="montoMin" th:value="${param.montoMin}" placeholder="$0" step="0.01" class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Monto Máximo</label>
+      <input type="number" name="montoMax" th:value="${param.montoMax}" placeholder="$999999" step="0.01" class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Fecha Inicio</label>
+      <input type="date" name="fechaInicio" th:value="${param.fechaInicio}" class="w-full border rounded px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Fecha Fin</label>
+      <input type="date" name="fechaFin" th:value="${param.fechaFin}" class="w-full border rounded px-3 py-2">
+    </div>
+  </form>
+  
+  <div class="mt-3 flex gap-2">
+    <button form="filtros" type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Filtrar</button>
+    <a th:href="@{/pagos}" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">Limpiar</a>
+    <a th:href="@{/pagos/export/pdf(metodo=${param.metodo},estado=${param.estado},fechaInicio=${param.fechaInicio},fechaFin=${param.fechaFin})}" 
+       class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">📄 Exportar PDF</a>
+    <a th:href="@{/pagos/export/excel(metodo=${param.metodo},estado=${param.estado},fechaInicio=${param.fechaInicio},fechaFin=${param.fechaFin})}" 
+       class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">📊 Exportar Excel</a>
+  </div>
+</div>
+
+<!-- Listado -->
+<div class="bg-white shadow rounded overflow-x-auto">
+  <div th:if="${#lists.isEmpty(pagos)}" class="p-4 text-gray-500">No hay pagos registrados.</div>
+  <table th:if="${!#lists.isEmpty(pagos)}" class="w-full">
+    <thead>
+      <tr class="bg-gray-200 text-left text-sm">
+        <th class="p-2">Referencia</th>
+        <th class="p-2">Usuario</th>
+        <th class="p-2">Método</th>
+        <th class="p-2">Detalles</th>
+        <th class="p-2">Monto</th>
+        <th class="p-2">Estado</th>
+        <th class="p-2">Fecha</th>
+        <th class="p-2">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="p : ${pagos}" class="border-t text-sm">
+        <td class="p-2">
+          <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded" th:text="${p.numeroReferencia}"></span>
+        </td>
+        <td class="p-2" th:text="${p.usuario != null ? p.usuario.name : 'N/A'}"></td>
+        <td class="p-2">
+          <span th:if="${p.metodoPago == 'Tarjeta'}" class="flex items-center gap-1">
+            <i class="fas fa-credit-card text-blue-600"></i> Tarjeta
+          </span>
+          <span th:if="${p.metodoPago == 'PayPal'}" class="flex items-center gap-1">
+            <i class="fab fa-paypal text-blue-500"></i> PayPal
+          </span>
+          <span th:if="${p.metodoPago == 'Transferencia'}" class="flex items-center gap-1">
+            <i class="fas fa-university text-green-600"></i> Transferencia
+          </span>
+          <span th:if="${p.metodoPago == 'Efectivo'}" class="flex items-center gap-1">
+            <i class="fas fa-money-bill text-green-700"></i> Efectivo
+          </span>
+        </td>
+        <td class="p-2 text-xs text-gray-600">
+          <span th:if="${p.metodoPago == 'Tarjeta'}" th:text="${p.numeroTarjeta}"></span>
+          <span th:if="${p.metodoPago == 'PayPal'}" th:text="${p.emailPaypal}"></span>
+          <span th:if="${p.metodoPago == 'Transferencia'}" th:text="${p.bancoCuenta}"></span>
+        </td>
+        <td class="p-2 font-bold" th:text="'$' + ${#numbers.formatDecimal(p.monto,1,'COMMA',2,'POINT')}"></td>
+        <td class="p-2">
+          <span th:if="${p.estado == 'Pendiente'}" class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">⏳ Pendiente</span>
+          <span th:if="${p.estado == 'Procesando'}" class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">🔄 Procesando</span>
+          <span th:if="${p.estado == 'Completado'}" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">✓ Completado</span>
+          <span th:if="${p.estado == 'Fallido'}" class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">✗ Fallido</span>
+          <span th:if="${p.estado == 'Reembolsado'}" class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">↩ Reembolsado</span>
+        </td>
+        <td class="p-2 text-xs" th:text="${#temporals.format(p.fechaPago, 'dd/MM/yyyy HH:mm')}"></td>
+        <td class="p-2">
+          <div class="flex gap-2">
+            <a th:href="@{/pagos/{id}(id=${p.id})}" class="text-blue-500 hover:text-blue-600" title="Ver detalles">
+              <i class="fas fa-eye"></i>
+            </a>
+            <form th:if="${p.estado == 'Pendiente'}" th:action="@{/pagos/{id}/procesar(id=${p.id})}" method="post" class="inline">
+              <button type="submit" class="text-green-600 hover:text-green-700" title="Procesar">
+                <i class="fas fa-check-circle"></i>
+              </button>
+            </form>
+            <form th:if="${p.estado == 'Completado'}" th:action="@{/pagos/{id}/reembolsar(id=${p.id})}" method="post" class="inline" onsubmit="return confirm('¿Reembolsar este pago?');">
+              <button type="submit" class="text-purple-600 hover:text-purple-700" title="Reembolsar">
+                <i class="fas fa-undo"></i>
+              </button>
+            </form>
+            <form th:action="@{/pagos/{id}/delete(id=${p.id})}" method="post" class="inline" onsubmit="return confirm('¿Eliminar este pago?');">
+              <button type="submit" class="text-red-500 hover:text-red-600" title="Eliminar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Resumen Estadísticas -->
+<div th:if="${!#lists.isEmpty(pagos)}" class="mt-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+  <div class="bg-yellow-50 p-4 rounded shadow text-center">
+    <div class="text-2xl font-bold" th:text="${#lists.size(pagos.?[estado == 'Pendiente'])}"></div>
+    <div class="text-sm text-gray-600">Pendientes</div>
+  </div>
+  <div class="bg-blue-50 p-4 rounded shadow text-center">
+    <div class="text-2xl font-bold" th:text="${#lists.size(pagos.?[estado == 'Procesando'])}"></div>
+    <div class="text-sm text-gray-600">Procesando</div>
+  </div>
+  <div class="bg-green-50 p-4 rounded shadow text-center">
+    <div class="text-2xl font-bold" th:text="${#lists.size(pagos.?[estado == 'Completado'])}"></div>
+    <div class="text-sm text-gray-600">Completados</div>
+  </div>
+  <div class="bg-red-50 p-4 rounded shadow text-center">
+    <div class="text-2xl font-bold" th:text="${#lists.size(pagos.?[estado == 'Fallido'])}"></div>
+    <div class="text-sm text-gray-600">Fallidos</div>
+  </div>
+  <div class="bg-purple-50 p-4 rounded shadow text-center">
+    <div class="text-2xl font-bold" th:text="${#lists.size(pagos.?[estado == 'Reembolsado'])}"></div>
+    <div class="text-sm text-gray-600">Reembolsados</div>
+  </div>
+</div>
+
+<form id="filtros" style="display: none;"></form>
+
+</body>
+</html>

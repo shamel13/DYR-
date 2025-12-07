@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Pago Procesado</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-100">
+
+<div class="min-h-screen flex items-center justify-center p-6">
+  <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
+    <!-- Icono de éxito -->
+    <div class="mb-6">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+        <i class="fas fa-check-circle text-green-500 text-5xl"></i>
+      </div>
+    </div>
+
+    <!-- Título -->
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">¡Pago Procesado!</h1>
+    
+    <!-- Mensaje -->
+    <p class="text-gray-600 mb-2">Tu pago ha sido procesado exitosamente.</p>
+    <p class="text-gray-600 mb-6">Tu pedido está siendo preparado.</p>
+
+    <!-- Información del pago -->
+    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-gray-600">Número de referencia:</span>
+        <span class="font-semibold text-gray-800" th:text="${numeroReferencia}">REF-12345678</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-600">Monto pagado:</span>
+        <span class="font-bold text-green-600 text-xl" th:text="'$' + ${#numbers.formatDecimal(monto, 0, 'POINT', 2, 'COMMA')}">$0.00</span>
+      </div>
+    </div>
+
+    <!-- Mensaje adicional -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 text-left">
+      <p class="text-sm text-blue-700">
+        <i class="fas fa-info-circle mr-2"></i>
+        Recibirás un correo de confirmación con los detalles de tu pedido.
+      </p>
+    </div>
+
+    <!-- Botones -->
+    <div class="space-y-3">
+      <a th:href="@{/pagina/catalogo}" 
+         class="block w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+        <i class="fas fa-shopping-bag mr-2"></i> Volver al Catálogo
+      </a>
+      <a th:href="@{/pagina/index}" 
+         class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg transition">
+        <i class="fas fa-home mr-2"></i> Ir al Inicio
+      </a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

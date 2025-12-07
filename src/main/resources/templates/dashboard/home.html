@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .gradient-card {
+      background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to));
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gray-900 text-white flex flex-col">
+    <div class="p-6 text-2xl font-bold flex items-center gap-2">
+      <i class="fa-solid fa-shirt text-red-500"></i>
+      DYR Admin
+    </div>
+    <nav class="flex-1 px-4 space-y-2">
+      <a th:href="@{/clientes}" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-user"></i> Listado de Clientes
+      </a>
+      <a th:href="@{/productos}" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-box-open"></i> Listado de Productos
+      </a>
+      <a th:href="@{/inventario}" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-warehouse"></i> Listado de Inventario
+      </a>
+      <a th:href="@{/pedidos}" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-truck"></i> Listado de Pedidos
+      </a>
+      <a th:href="@{/ventas}" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-cash-register"></i> Listado de Ventas
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-gray-700">
+      <div th:if="${currentUserName != null}" class="text-sm">
+        <p class="font-semibold text-white mb-1" th:text="${currentUserName}"></p>
+        <p class="text-gray-400 text-xs mb-2" th:text="${currentUserEmail}"></p>
+        <form th:action="@{/auth/logout}" method="get">
+          <button type="submit" class="w-full text-left text-red-400 hover:text-red-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+          </button>
+        </form>
+      </div>
+      <div th:if="${currentUserName == null}">
+        <p class="italic text-gray-400">Usuario invitado</p>
+        <a th:href="@{/auth/login}" class="text-blue-400 hover:underline">Iniciar sesión</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100">
+    <div th:if="${currentUserName != null}">
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+          ¡Bienvenido, <span class="text-red-600" th:text="${currentUserName}"></span>!
+        </h1>
+        <p class="text-gray-600">Panel de Control y Estadísticas del Sistema</p>
+      </div>
+
+      <!-- Estadísticas Principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <!-- Clientes -->
+        <div class="gradient-card from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-blue-100 text-sm font-medium mb-1">Total Clientes</p>
+              <p class="text-4xl font-bold" th:text="${totalClientes ?: 0}">0</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-users text-3xl"></i>
+            </div>
+          </div>
+          <a th:href="@{/clientes}" class="mt-4 inline-block text-sm text-blue-100 hover:text-white">
+            Ver detalles →
+          </a>
+        </div>
+
+        <!-- Productos -->
+        <div class="gradient-card from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-purple-100 text-sm font-medium mb-1">Total Productos</p>
+              <p class="text-4xl font-bold" th:text="${totalProductos ?: 0}">0</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-box-open text-3xl"></i>
+            </div>
+          </div>
+          <a th:href="@{/productos}" class="mt-4 inline-block text-sm text-purple-100 hover:text-white">
+            Ver detalles →
+          </a>
+        </div>
+
+        <!-- Pedidos -->
+        <div class="gradient-card from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-orange-100 text-sm font-medium mb-1">Total Pedidos</p>
+              <p class="text-4xl font-bold" th:text="${totalPedidos ?: 0}">0</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-truck text-3xl"></i>
+            </div>
+          </div>
+          <a th:href="@{/pedidos}" class="mt-4 inline-block text-sm text-orange-100 hover:text-white">
+            Ver detalles →
+          </a>
+        </div>
+
+        <!-- Ventas -->
+        <div class="gradient-card from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-green-100 text-sm font-medium mb-1">Total Ventas</p>
+              <p class="text-4xl font-bold" th:text="${totalVentas ?: 0}">0</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-cash-register text-3xl"></i>
+            </div>
+          </div>
+          <a th:href="@{/ventas}" class="mt-4 inline-block text-sm text-green-100 hover:text-white">
+            Ver detalles →
+          </a>
+        </div>
+      </div>
+
+      <!-- Estadísticas Secundarias -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Ingresos -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 rounded-lg">
+              <i class="fa-solid fa-dollar-sign text-2xl text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800">Ingresos Totales</h3>
+              <p class="text-sm text-gray-500">Suma de todas las ventas</p>
+            </div>
+          </div>
+          <p class="text-4xl font-bold text-emerald-600" th:text="'$' + ${#numbers.formatDecimal(ingresosVentas ?: 0, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <a th:href="@{/ventas}" class="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
+              Ver historial de ventas →
+            </a>
+          </div>
+        </div>
+
+        <!-- Alertas de Inventario -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="bg-gradient-to-br from-red-500 to-red-600 p-3 rounded-lg">
+              <i class="fa-solid fa-exclamation-triangle text-2xl text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800">Productos con Poco Stock</h3>
+              <p class="text-sm text-gray-500">Menos de 5 unidades disponibles</p>
+            </div>
+          </div>
+          <p class="text-4xl font-bold text-red-600" th:text="${productosPocoStock ?: 0}">0</p>
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <a th:href="@{/inventario}" class="text-red-600 hover:text-red-700 text-sm font-medium">
+              Revisar inventario →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acceso Rápido -->
+      <div class="mt-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Acceso Rápido</h2>
+        <a th:href="@{/inventario}" class="block bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition flex items-center gap-4 max-w-md">
+          <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-4 rounded-lg">
+            <i class="fa-solid fa-warehouse text-3xl text-white"></i>
+          </div>
+          <div>
+            <p class="font-bold text-xl text-gray-800">Gestionar Inventario</p>
+            <p class="text-sm text-gray-500">Control de stock y productos</p>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Vista para usuario no autenticado -->
+    <div th:if="${currentUserName == null}" class="text-center py-20">
+      <i class="fa-solid fa-lock text-6xl text-gray-400 mb-4"></i>
+      <h1 class="text-3xl font-bold mb-4">Bienvenido al Panel de Administración</h1>
+      <p class="text-gray-600 mb-6">Por favor inicia sesión para acceder a todas las funciones</p>
+      <a th:href="@{/auth/login}" class="inline-block bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition">
+        <i class="fa-solid fa-right-to-bracket mr-2"></i> Iniciar Sesión
+      </a>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
+</html>

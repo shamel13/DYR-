@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Nuevo Pago</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-100 p-6">
+
+<div class="mb-6">
+  <a th:href="@{/pagos}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition">
+    ← Volver
+  </a>
+</div>
+
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-2xl font-bold mb-6">💳 Procesar Nuevo Pago</h1>
+
+  <form th:action="@{/pagos}" method="post" class="bg-white p-6 rounded-lg shadow">
+    
+    <!-- Campo oculto para el carrito -->
+    <input type="hidden" name="carrito" id="carritoInput" value="">
+    
+    <!-- Información General -->
+    <div class="mb-6">
+      <h2 class="text-lg font-bold mb-4 text-blue-600">Información General</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Usuario</label>
+          <div th:if="${currentUser != null}" class="space-y-1">
+            <input type="hidden" name="usuarioId" th:value="${currentUser.id}" />
+            <div class="w-full border p-2 rounded bg-gray-100 text-gray-700">
+              <span class="font-semibold" th:text="${currentUser.name}"></span>
+              <span class="text-sm text-gray-500" th:text="'(' + ${currentUser.email} + ')'">correo</span>
+            </div>
+          </div>
+          <select th:unless="${currentUser != null}" name="usuarioId" id="usuarioSelect" class="w-full border p-2 rounded" required>
+            <option value="">Seleccione usuario</option>
+            <option th:each="u : ${usuarios}" 
+                    th:value="${u.id}" 
+                    th:text="${u.name + ' (' + u.email + ')'}"
+                    th:selected="${currentUser != null && currentUser.id == u.id}"></option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Monto *</label>
+          <input type="number" name="monto" id="montoInput" step="0.01" min="0.01" required 
+                 class="w-full border p-2 rounded" placeholder="0.00"
+                 th:value="${monto}">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Teléfono *</label>
+          <input type="text" name="telefono" id="telefonoInput" class="w-full border p-2 rounded" required
+                 placeholder="Número de contacto"
+                 th:value="${currentUser != null ? currentUser.phone : ''}">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Email *</label>
+          <input type="email" name="emailContacto" id="emailInput" class="w-full border p-2 rounded" required
+                 placeholder="Correo de contacto"
+                 th:value="${currentUser != null ? currentUser.email : ''}">
+        </div>
+        <div class="col-span-2" th:if="${currentUser != null && currentUser.address != null && currentUser.address != ''}">
+          <label class="block text-sm font-medium mb-1">Dirección de Envío *</label>
+          <input type="text" name="direccion" id="direccionInput" class="w-full border p-2 rounded" required
+                 placeholder="Dirección completa"
+                 th:value="${currentUser.address}">
+        </div>
+        <div class="col-span-2" th:unless="${currentUser != null && currentUser.address != null && currentUser.address != ''}">
+          <label class="block text-sm font-medium mb-1">Dirección de Envío *</label>
+          <input type="text" name="direccion" id="direccionInput" class="w-full border p-2 rounded" required
+                 placeholder="Ingrese su dirección de envío">
+        </div>
+        <div th:if="${currentUser != null && currentUser.city != null && currentUser.city != ''}">
+          <label class="block text-sm font-medium mb-1">Ciudad *</label>
+          <input type="text" name="ciudad" id="ciudadInput" class="w-full border p-2 rounded" required
+                 placeholder="Ciudad"
+                 th:value="${currentUser.city}">
+        </div>
+        <div th:unless="${currentUser != null && currentUser.city != null && currentUser.city != ''}">
+          <label class="block text-sm font-medium mb-1">Ciudad *</label>
+          <input type="text" name="ciudad" id="ciudadInput" class="w-full border p-2 rounded" required
+                 placeholder="Ingrese su ciudad">
+        </div>
+        <div th:if="${currentUser != null && currentUser.postalCode != null && currentUser.postalCode != ''}">
+          <label class="block text-sm font-medium mb-1">Código Postal</label>
+          <input type="text" name="codigoPostal" id="codigoPostalInput" class="w-full border p-2 rounded" 
+                 placeholder="Código postal"
+                 th:value="${currentUser.postalCode}">
+        </div>
+        <div th:unless="${currentUser != null && currentUser.postalCode != null && currentUser.postalCode != ''}">
+          <label class="block text-sm font-medium mb-1">Código Postal</label>
+          <input type="text" name="codigoPostal" id="codigoPostalInput" class="w-full border p-2 rounded" 
+                 placeholder="Ingrese su código postal">
+        </div>
+      </div>
+    </div>
+
+    <!-- Método de Pago -->
+    <div class="mb-6">
+      <h2 class="text-lg font-bold mb-4 text-blue-600">Método de Pago</h2>
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <label class="relative cursor-pointer">
+          <input type="radio" name="metodoPago" value="Tarjeta" checked onchange="mostrarFormulario('tarjeta')" 
+                 class="peer sr-only">
+          <div class="border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 p-4 rounded-lg text-center transition">
+            <i class="fas fa-credit-card text-3xl text-blue-600 mb-2"></i>
+            <div class="text-sm font-medium">Tarjeta</div>
+          </div>
+        </label>
+        <label class="relative cursor-pointer">
+          <input type="radio" name="metodoPago" value="PayPal" onchange="mostrarFormulario('paypal')" 
+                 class="peer sr-only">
+          <div class="border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 p-4 rounded-lg text-center transition">
+            <i class="fab fa-paypal text-3xl text-blue-500 mb-2"></i>
+            <div class="text-sm font-medium">PayPal</div>
+          </div>
+        </label>
+        <label class="relative cursor-pointer">
+          <input type="radio" name="metodoPago" value="Efectivo" onchange="mostrarFormulario('efectivo')" 
+                 class="peer sr-only">
+          <div class="border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:bg-blue-50 p-4 rounded-lg text-center transition">
+            <i class="fas fa-money-bill text-3xl text-green-700 mb-2"></i>
+            <div class="text-sm font-medium">Efectivo</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Formulario Tarjeta -->
+      <div id="form-tarjeta" class="formulario-pago">
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h3 class="font-bold mb-3 flex items-center gap-2">
+            <i class="fas fa-credit-card"></i> Datos de la Tarjeta
+          </h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+              <label class="block text-sm font-medium mb-1">Número de Tarjeta *</label>
+              <input type="text" name="numeroTarjeta" maxlength="19" required
+                     class="w-full border p-2 rounded font-mono" 
+                     placeholder="1234 5678 9012 3456"
+                     onkeyup="formatearTarjeta(this)">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Nombre del Titular *</label>
+              <input type="text" name="nombreTitular" class="w-full border p-2 rounded" required
+                     placeholder="NOMBRE APELLIDO">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Tipo de Tarjeta *</label>
+              <select name="tipoTarjeta" class="w-full border p-2 rounded" required>
+                <option value="Visa">Visa</option>
+                <option value="Mastercard">Mastercard</option>
+                <option value="American Express">American Express</option>
+                <option value="Otra">Otra</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario PayPal -->
+      <div id="form-paypal" class="formulario-pago hidden">
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h3 class="font-bold mb-3 flex items-center gap-2">
+            <i class="fab fa-paypal"></i> Datos de PayPal
+          </h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Email de PayPal *</label>
+              <input type="email" name="emailPaypal" class="w-full border p-2 rounded" required
+                     placeholder="usuario@paypal.com">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Transaction ID *</label>
+              <input type="text" name="transactionIdPaypal" class="w-full border p-2 rounded" required
+                     placeholder="ID de la transacción">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario Efectivo -->
+      <div id="form-efectivo" class="formulario-pago hidden">
+        <div class="bg-green-50 p-4 rounded-lg">
+          <h3 class="font-bold mb-3 flex items-center gap-2">
+            <i class="fas fa-money-bill"></i> Pago en Efectivo
+          </h3>
+          <p class="text-sm text-gray-600">El pago se registrará como recibido en efectivo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista Previa -->
+    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+      <h3 class="font-bold mb-2">Vista Previa del Pago</h3>
+      <div class="flex justify-between items-center">
+        <span class="text-gray-600">Monto a procesar:</span>
+        <span id="montoPreview" class="text-2xl font-bold text-green-600">$0.00</span>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex gap-3 justify-end">
+      <a th:href="@{/pagos}" class="px-6 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancelar</a>
+      <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2">
+        <i class="fas fa-check"></i> Procesar Pago
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function mostrarFormulario(tipo) {
+    // Ocultar todos los formularios y deshabilitar sus campos
+    document.querySelectorAll('.formulario-pago').forEach(form => {
+      form.classList.add('hidden');
+      form.querySelectorAll('input, select, textarea').forEach(field => {
+        field.disabled = true;
+      });
+    });
+    
+    // Mostrar el formulario seleccionado y habilitar sus campos
+    const formActivo = document.getElementById('form-' + tipo);
+    formActivo.classList.remove('hidden');
+    formActivo.querySelectorAll('input, select, textarea').forEach(field => {
+      field.disabled = false;
+    });
+  }
+
+  function formatearTarjeta(input) {
+    let value = input.value.replace(/\s/g, '');
+    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    input.value = formattedValue;
+  }
+
+  function actualizarMontoPreview() {
+    const monto = parseFloat(document.getElementById('montoInput').value) || 0;
+    document.getElementById('montoPreview').textContent = '$' + monto.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  document.getElementById('montoInput').addEventListener('input', actualizarMontoPreview);
+
+  // Actualizar el preview cuando se carga la página si ya hay un monto
+  window.addEventListener('DOMContentLoaded', function() {
+    actualizarMontoPreview();
+    
+    // Cargar carrito desde sessionStorage
+    const carritoJson = sessionStorage.getItem('carritoCompra');
+    if (carritoJson) {
+      document.getElementById('carritoInput').value = carritoJson;
+      console.log('Carrito cargado:', carritoJson);
+    }
+    
+    // Inicializar el formulario de tarjeta como activo
+    mostrarFormulario('tarjeta');
+  });
+</script>
+
+</body>
+</html>

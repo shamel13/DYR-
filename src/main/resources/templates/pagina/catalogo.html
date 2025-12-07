@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catálogo - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- NAVBAR -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4 flex flex-wrap items-center justify-between">
+      <!-- Logo -->
+      <a th:href="@{/pagina/index}" class="text-2xl font-bold text-red-500 flex items-center gap-2">
+        <i class="fas fa-tshirt"></i>
+        <span>DYR</span>
+      </a>
+
+      <!-- Menú móvil toggle -->
+      <button id="menu-toggle" class="md:hidden text-gray-800 focus:outline-none">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+
+      <!-- Menú desktop -->
+      <ul id="menu" class="hidden md:flex items-center space-x-6 text-gray-700 font-medium">
+        <li><a th:href="@{/pagina/index}" class="hover:text-red-500 transition">Inicio</a></li>
+        <li><a th:href="@{/pagina/catalogo}" class="hover:text-red-500 transition">Catálogo</a></li>
+        <li><a th:href="@{/pagina/acerca}" class="hover:text-red-500 transition">Acerca</a></li>
+
+        <!-- Carrito de compras -->
+        <li th:if="${currentUserName != null}">
+          <button onclick="toggleCart()" class="relative hover:text-red-500 transition">
+            <i class="fas fa-shopping-bag text-xl"></i>
+            <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+          </button>
+        </li>
+
+        <!-- Si NO hay sesión iniciada -->
+        <li th:if="${currentUserName == null}">
+          <a th:href="@{/auth/login}" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full transition">
+            Iniciar sesión
+          </a>
+        </li>
+
+        <!-- Si SÍ hay sesión iniciada -->
+        <li th:if="${currentUserName != null}" class="relative group">
+          <button class="flex items-center space-x-2 text-gray-800 hover:text-red-500 transition">
+            <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">
+              <span th:text="${#strings.substring(currentUserName, 0, 1).toUpperCase()}">U</span>
+            </div>
+            <span class="hidden lg:inline" th:text="${currentUserName}">Usuario</span>
+            <i class="fas fa-chevron-down text-sm"></i>
+          </button>
+          <ul class="absolute right-0 top-full pt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <li>
+              <a th:href="@{/auth/profile}" class="block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-user mr-2"></i> Perfil
+              </a>
+            </li>
+            <li>
+              <button th:onclick="'window.location.href=\'/auth/logout\''" class="w-full text-left block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+              </button>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Menú móvil desplegable -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 mt-2 py-4 px-6 space-y-4 text-gray-700 font-medium">
+      <a th:href="@{/pagina/index}" class="block hover:text-red-500 transition">Inicio</a>
+      <a th:href="@{/pagina/catalogo}" class="block hover:text-red-500 transition">Catálogo</a>
+      <a th:href="@{/pagina/acerca}" class="block hover:text-red-500 transition">Acerca</a>
+
+      <div th:if="${currentUserName == null}">
+        <a th:href="@{/auth/login}" class="block bg-red-500 hover:bg-red-600 text-white text-center px-5 py-2 rounded-full transition">
+          Iniciar sesión
+        </a>
+      </div>
+
+      <div th:if="${currentUserName != null}" class="space-y-2">
+        <p class="text-gray-500 text-sm" th:text="'Hola, ' + ${currentUserName}">Hola, Usuario</p>
+        <a th:href="@{/auth/profile}" class="block hover:text-red-500 transition"><i class="fas fa-user mr-2"></i> Perfil</a>
+        <button th:onclick="'window.location.href=\'/auth/logout\''" class="w-full text-left hover:text-red-500 transition">
+          <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    toggle.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+    });
+  </script>
+
+  <!-- RESTO DE LA PÁGINA -->
+      
+  </header>
+
+  <!-- Sección de Filtros -->
+  <section class="max-w-7xl mx-auto px-4 py-6">
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-lg font-bold text-gray-800 mb-4">Filtros</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Búsqueda por nombre -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Buscar producto</label>
+          <input type="text" id="searchInput" placeholder="Nombre del producto..." 
+                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                 onkeyup="aplicarFiltros()">
+        </div>
+
+        <!-- Filtro por precio mínimo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Precio mínimo</label>
+          <input type="number" id="minPrice" placeholder="$0" 
+                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                 onchange="aplicarFiltros()">
+        </div>
+
+        <!-- Filtro por precio máximo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Precio máximo</label>
+          <input type="number" id="maxPrice" placeholder="$999999" 
+                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                 onchange="aplicarFiltros()">
+        </div>
+
+        <!-- Ordenar por -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Ordenar por</label>
+          <select id="sortBy" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  onchange="aplicarFiltros()">
+            <option value="">Sin ordenar</option>
+            <option value="nombre-asc">Nombre (A-Z)</option>
+            <option value="nombre-desc">Nombre (Z-A)</option>
+            <option value="precio-asc">Precio (menor a mayor)</option>
+            <option value="precio-desc">Precio (mayor a menor)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filtros de disponibilidad -->
+      <div class="mt-4 flex items-center gap-6">
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" id="filterStock" class="rounded text-red-500" onchange="aplicarFiltros()" checked>
+          <span>Solo productos disponibles</span>
+        </label>
+        <button onclick="limpiarFiltros()" class="text-red-500 hover:text-red-600 text-sm font-medium">
+          <i class="fas fa-times"></i> Limpiar filtros
+        </button>
+        <span id="resultCount" class="ml-auto text-sm text-gray-600"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Productos -->
+  <section id="productos-grid" class="py-12 px-4 max-w-7xl mx-auto grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div th:each="producto : ${productos}" 
+         class="product bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition"
+         th:data-id="${producto.id}"
+         th:data-nombre="${producto.nombre}"
+         th:data-precio="${producto.precio}"
+         th:data-stock="${producto.stockActual}">
+      <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="w-full h-64 object-cover" onerror="this.src='https://placehold.co/400x400'">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1" th:text="${producto.nombre}"></h3>
+        <p class="text-orange-600 font-bold mb-2" th:text="'$' + ${#numbers.formatInteger(producto.precio, 0, 'POINT')}"></p>
+
+        <div th:if="${producto.stockActual > 0}">
+          <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm w-full"
+                  th:data-id="${producto.id}"
+                  th:data-nombre="${producto.nombre}"
+                  th:data-precio="${producto.precio}"
+                  th:data-imagen="${producto.imagenUrl}"
+                  th:data-stock="${producto.stockActual}"
+                  onclick="addToCartFromData(this)">
+            Agregar al carrito
+          </button>
+        </div>
+        <span th:if="${producto.stockActual <= 0}" class="text-gray-500 text-sm">Agotado</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-green-600 text-white py-2 px-4 rounded shadow z-50">
+    Producto agregado al carrito
+  </div>
+
+  <!-- Modal de Login Required -->
+  <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 animate-fadeIn">
+      <div class="flex items-center justify-center mb-4">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-lock text-red-500 text-3xl"></i>
+        </div>
+      </div>
+      <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Inicia sesión para continuar</h3>
+      <p class="text-gray-600 text-center mb-6">Debes iniciar sesión para agregar productos al carrito</p>
+      <div class="flex gap-3">
+        <button onclick="closeLoginModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded font-medium transition">
+          Cancelar
+        </button>
+        <a href="/auth/login" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium text-center transition">
+          Iniciar sesión
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel del Carrito -->
+  <div id="cart-panel" class="cart-panel hidden fixed top-0 right-0 w-96 h-full bg-white shadow-xl z-50 flex flex-col">
+    <div class="flex items-center justify-between p-4 border-b bg-red-500 text-white">
+      <h2 class="text-xl font-bold">🛒 Tu Carrito</h2>
+      <button onclick="toggleCart()" class="hover:text-gray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <p class="text-gray-500 text-sm">Tu carrito está vacío.</p>
+    </div>
+    <div class="p-4 border-t bg-gray-50">
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-semibold text-lg">Total:</span>
+        <span id="cart-total" class="font-bold text-red-600 text-lg">$0</span>
+      </div>
+      <button onclick="confirmarCompra()" 
+         class="block text-center bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded font-medium transition">
+        Continuar con la compra
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Compra -->
+  <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 animate-fadeIn">
+      <div class="flex items-center justify-center mb-4">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-shopping-cart text-green-500 text-3xl"></i>
+        </div>
+      </div>
+      <h3 class="text-xl font-bold text-center text-gray-800 mb-2">¿Deseas continuar con tu compra?</h3>
+      <p class="text-gray-600 text-center mb-2">Serás redirigido a la pasarela de pago para completar tu compra.</p>
+      <div class="bg-gray-50 rounded-lg p-3 mb-6">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700 font-medium">Total a pagar:</span>
+          <span id="modal-total" class="font-bold text-green-600 text-xl">$0</span>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeConfirmModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded font-medium transition">
+          Cancelar
+        </button>
+        <button onclick="irAPasarelaPago()" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium transition">
+          Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+   let cart = [];
+   
+   function isUserLoggedIn() {
+     return /*[[${currentUserName != null}]]*/ false;
+   }
+
+   // Función para aplicar filtros multicriterio
+   function aplicarFiltros() {
+     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+     const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+     const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+     const sortBy = document.getElementById('sortBy').value;
+     const filterStock = document.getElementById('filterStock').checked;
+
+     const productos = Array.from(document.querySelectorAll('.product'));
+     let productosVisibles = 0;
+
+     // Filtrar productos
+     productos.forEach(producto => {
+       const nombre = producto.dataset.nombre.toLowerCase();
+       const precio = parseFloat(producto.dataset.precio);
+       const stock = parseInt(producto.dataset.stock);
+
+       let visible = true;
+
+       // Filtro por nombre
+       if (searchTerm && !nombre.includes(searchTerm)) {
+         visible = false;
+       }
+
+       // Filtro por precio
+       if (precio < minPrice || precio > maxPrice) {
+         visible = false;
+       }
+
+       // Filtro por stock
+       if (filterStock && stock <= 0) {
+         visible = false;
+       }
+
+       producto.style.display = visible ? 'block' : 'none';
+       if (visible) productosVisibles++;
+     });
+
+     // Ordenar productos
+     if (sortBy) {
+       const grid = document.getElementById('productos-grid');
+       const productosArray = Array.from(productos);
+
+       productosArray.sort((a, b) => {
+         const nombreA = a.dataset.nombre.toLowerCase();
+         const nombreB = b.dataset.nombre.toLowerCase();
+         const precioA = parseFloat(a.dataset.precio);
+         const precioB = parseFloat(b.dataset.precio);
+
+         switch(sortBy) {
+           case 'nombre-asc':
+             return nombreA.localeCompare(nombreB);
+           case 'nombre-desc':
+             return nombreB.localeCompare(nombreA);
+           case 'precio-asc':
+             return precioA - precioB;
+           case 'precio-desc':
+             return precioB - precioA;
+           default:
+             return 0;
+         }
+       });
+
+       productosArray.forEach(producto => grid.appendChild(producto));
+     }
+
+     // Actualizar contador de resultados
+     document.getElementById('resultCount').textContent = `${productosVisibles} producto${productosVisibles !== 1 ? 's' : ''} encontrado${productosVisibles !== 1 ? 's' : ''}`;
+   }
+
+   function limpiarFiltros() {
+     document.getElementById('searchInput').value = '';
+     document.getElementById('minPrice').value = '';
+     document.getElementById('maxPrice').value = '';
+     document.getElementById('sortBy').value = '';
+     document.getElementById('filterStock').checked = true;
+     aplicarFiltros();
+   }
+
+   // Aplicar filtros al cargar la página
+   window.addEventListener('DOMContentLoaded', aplicarFiltros);
+
+   function addToCartFromData(button) {
+     // Verificar si hay sesión iniciada
+     if (!isUserLoggedIn()) {
+       showLoginModal();
+       return;
+     }
+
+     const id = parseInt(button.dataset.id);
+     const nombre = button.dataset.nombre;
+     const precio = parseFloat(button.dataset.precio);
+     const imagen = button.dataset.imagen;
+     const stock = parseInt(button.dataset.stock);
+     addToCart(id, nombre, precio, imagen, stock);
+   }
+
+   function addToCart(id, nombre, precio, imagen, stock) {
+     // Verificar si el producto ya existe en el carrito
+     const existente = cart.find(item => item.id === id);
+     if (existente) {
+       if (existente.cantidad < stock) {
+         existente.cantidad++;
+         updateCart();
+         showToast();
+       } else {
+         alert(`No puedes agregar más. Stock disponible: ${stock}`);
+       }
+     } else {
+       cart.push({ id, nombre, precio, imagen, cantidad: 1, stock });
+       updateCart();
+       showToast();
+     }
+   }
+
+   function incrementarCantidad(index) {
+     if (cart[index]) {
+       if (cart[index].cantidad < cart[index].stock) {
+         cart[index].cantidad++;
+         updateCart();
+       } else {
+         alert(`No puedes agregar más. Stock disponible: ${cart[index].stock}`);
+       }
+     }
+   }
+
+   function decrementarCantidad(index) {
+     if (cart[index]) {
+       if (cart[index].cantidad > 1) {
+         cart[index].cantidad--;
+       } else {
+         cart.splice(index, 1);
+       }
+       updateCart();
+     }
+   }
+
+   function eliminarDelCarrito(index) {
+     cart.splice(index, 1);
+     updateCart();
+   }
+
+   function updateCart() {
+     const cartItems = document.getElementById("cart-items");
+     const cartCount = document.getElementById("cart-count");
+     const cartTotal = document.getElementById("cart-total");
+
+     cartItems.innerHTML = "";
+     let total = 0;
+
+     if (cart.length === 0) {
+       cartItems.innerHTML = `<p class="text-gray-500 text-sm">Tu carrito está vacío.</p>`;
+     } else {
+       cart.forEach((item, index) => {
+         total += item.precio * item.cantidad;
+         cartItems.innerHTML += `
+           <div class="flex items-center gap-3 bg-white shadow rounded-lg p-3">
+             <img src="${item.imagen}" alt="${item.nombre}" class="w-16 h-16 object-cover rounded" onerror="this.src='https://placehold.co/64x64'">
+             <div class="flex-1">
+               <h3 class="font-semibold text-sm">${item.nombre}</h3>
+               <p class="text-red-500 font-bold text-sm">$${item.precio.toLocaleString()}</p>
+               <p class="text-gray-500 text-xs">Stock: ${item.stock}</p>
+               <div class="flex items-center gap-2 mt-2">
+                 <button onclick="decrementarCantidad(${index})" class="bg-gray-300 hover:bg-gray-400 text-black px-2 py-1 rounded text-xs font-bold">−</button>
+                 <span class="text-sm font-semibold w-8 text-center">${item.cantidad}</span>
+                 <button onclick="incrementarCantidad(${index})" class="bg-gray-300 hover:bg-gray-400 text-black px-2 py-1 rounded text-xs font-bold" ${item.cantidad >= item.stock ? 'disabled style="opacity:0.5;cursor:not-allowed"' : ''}>+</button>
+                 <button onclick="eliminarDelCarrito(${index})" class="ml-auto bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">🗑️</button>
+               </div>
+             </div>
+           </div>
+         `;
+       });
+     }
+
+     cartCount.innerText = cart.reduce((sum, item) => sum + item.cantidad, 0);
+     cartTotal.innerText = `$${total.toLocaleString()}`;
+   }
+
+   function toggleCart() {
+     document.getElementById("cart-panel").classList.toggle("hidden");
+   }
+
+   function showToast() {
+     const toast = document.getElementById("toast");
+     toast.classList.remove("hidden");
+     setTimeout(() => toast.classList.add("hidden"), 2000);
+   }
+
+   function showLoginModal() {
+     document.getElementById("loginModal").classList.remove("hidden");
+   }
+
+   function closeLoginModal() {
+     document.getElementById("loginModal").classList.add("hidden");
+   }
+
+   function confirmarCompra() {
+     if (cart.length === 0) {
+       alert("Tu carrito está vacío");
+       return;
+     }
+     
+     // Actualizar el total en el modal
+     const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+     document.getElementById("modal-total").innerText = `$${total.toLocaleString()}`;
+     
+     // Mostrar modal de confirmación
+     document.getElementById("confirmModal").classList.remove("hidden");
+   }
+
+   function closeConfirmModal() {
+     document.getElementById("confirmModal").classList.add("hidden");
+   }
+
+   function irAPasarelaPago() {
+     // Calcular el total del carrito
+     const total = cart.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+     
+     // Guardar carrito en sessionStorage para enviarlo al backend
+     sessionStorage.setItem('carritoCompra', JSON.stringify(cart));
+     
+     // Cerrar el modal
+     closeConfirmModal();
+     
+     // Redirigir a la pasarela de pago con el monto
+     window.location.href = `/pagos/nuevo?monto=${total}`;
+   }
+  </script>
+</body>
+</html>
