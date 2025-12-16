@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Cliente</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<div class="max-w-3xl mx-auto py-10 px-4">
+  <!-- Botón volver -->
+  <div class="mb-6">
+    <a th:href="@{/clientes}" 
+       class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">
+      <i class="fas fa-arrow-left mr-2"></i> Volver al listado
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg p-8">
+    <div class="flex items-center gap-4 mb-6">
+      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 p-4 rounded-lg">
+        <i class="fas fa-user-edit text-3xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Editar Cliente</h1>
+        <p class="text-gray-600">Actualiza la información del cliente</p>
+      </div>
+    </div>
+
+    <!-- Alerta de validación -->
+    <div th:if="${success}" class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 text-green-700 rounded flex items-center gap-3">
+      <i class="fas fa-check-circle text-xl"></i>
+      <strong>Actualizado correctamente</strong>
+    </div>
+
+    <form th:action="@{/clientes/{id}(id=${usuario.id})}" method="post" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-user text-blue-500 mr-1"></i> Nombre Completo *
+          </label>
+          <input type="text" name="name" th:value="${usuario.name}" 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                 required minlength="8">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-envelope text-blue-500 mr-1"></i> Email *
+          </label>
+          <input type="email" name="email" th:value="${usuario.email}" 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                 required>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-phone text-blue-500 mr-1"></i> Teléfono *
+          </label>
+          <input type="text" name="phone" th:value="${usuario.phone}" 
+                 pattern="[0-9]{7,10}" maxlength="10"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                 required>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-city text-blue-500 mr-1"></i> Ciudad
+          </label>
+          <input type="text" name="city" th:value="${usuario.city}" 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          <i class="fas fa-map-marker-alt text-blue-500 mr-1"></i> Dirección
+        </label>
+        <input type="text" name="address" th:value="${usuario.address}" 
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="submit" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg transition flex items-center justify-center gap-2 font-semibold">
+          <i class="fas fa-save"></i> Guardar cambios
+        </button>
+        <a th:href="@{/clientes/{id}(id=${usuario.id})}" class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition flex items-center gap-2 font-semibold">
+          <i class="fas fa-eye"></i> Ver detalle
+        </a>
+      </div>
+    </form>
+    
+    <!-- Zona de peligro -->
+    <div class="mt-8 pt-6 border-t border-gray-200">
+      <h3 class="text-lg font-bold text-orange-600 mb-3">
+        <i class="fas fa-exclamation-triangle mr-2"></i>Cambiar Estado del Cliente
+      </h3>
+      
+      <!-- Si está activo, mostrar opción de inactivar -->
+      <div th:if="${usuario.estado == 'activo' || usuario.estado == null}">
+        <p class="text-gray-600 mb-4">Esta acción desactivará el cliente. Podrá reactivarse posteriormente.</p>
+        <form th:action="@{/clientes/{id}/delete(id=${usuario.id})}" method="post" onsubmit="return confirm('¿Estás seguro de desactivar este cliente?');">
+          <button type="submit" class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center gap-2 font-semibold">
+            <i class="fas fa-ban"></i> Desactivar Cliente
+          </button>
+        </form>
+      </div>
+      
+      <!-- Si está inactivo, mostrar opción de activar -->
+      <div th:if="${usuario.estado == 'inactivo'}">
+        <p class="text-gray-600 mb-4">Esta acción activará el cliente nuevamente.</p>
+        <form th:action="@{/clientes/{id}/activate(id=${usuario.id})}" method="post" onsubmit="return confirm('¿Estás seguro de activar este cliente?');">
+          <button type="submit" class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2 font-semibold">
+            <i class="fas fa-check-circle"></i> Activar Cliente
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

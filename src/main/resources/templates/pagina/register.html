@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- NAVBAR -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <a href="/pagina/index" class="text-2xl font-bold flex items-center gap-2 text-gray-800">
+        <i class="fa-solid fa-shirt text-red-500"></i> DYR
+      </a>
+      <nav class="flex-1 flex justify-center gap-10">
+        <a href="/pagina/index" class="text-gray-700 hover:text-red-500 transition">Inicio</a>
+        <a href="/pagina/acerca" class="text-gray-700 hover:text-red-500 transition">Acerca de</a>
+        <a href="/pagina/catalogo" class="text-gray-700 hover:text-red-500 transition">Productos</a>
+        <a href="/auth/login" class="text-gray-700 hover:text-red-500 transition">Iniciar sesión</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- REGISTER FORM -->
+  <section class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold text-center mb-6">Crear Cuenta</h2>
+
+      <!-- Mensaje de error general del backend -->
+      <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <p th:text="${error}"></p>
+      </div>
+
+      <!-- Errores de validación del backend -->
+      <div th:if="${errors}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <ul class="list-disc list-inside">
+          <li th:each="error : ${errors}" th:text="${error.defaultMessage}"></li>
+        </ul>
+      </div>
+
+      <form action="/auth/register" method="post" class="space-y-4" onsubmit="return validarFormulario()">
+        <div>
+          <label class="block text-gray-700">Nombre y Apellido <span class="text-red-500">*</span></label>
+          <input type="text" name="name" id="name" required minlength="8" 
+                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                 placeholder="Mínimo 8 caracteres"/>
+          <span id="errorName" class="text-red-500 text-xs hidden">El nombre debe tener mínimo 8 caracteres</span>
+        </div>
+        <div>
+          <label class="block text-gray-700">Email <span class="text-red-500">*</span></label>
+          <input type="email" name="email" id="email" required 
+                 pattern="[a-zA-Z0-9._%+-]{6,}@(gmail|hotmail|outlook|yahoo)\.(com|es|co)"
+                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                 placeholder="ejemplo@gmail.com"/>
+          <span id="errorEmail" class="text-red-500 text-xs hidden">Usa un correo válido de Gmail, Hotmail, Outlook o Yahoo (mínimo 6 caracteres antes del @)</span>
+        </div>
+        <!-- Campo 'usuario' eliminado: se usará el email como identificador -->
+        <div>
+          <label class="block text-gray-700">Tipo de documento <span class="text-red-500">*</span></label>
+          <select name="documentType" required class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500">
+            <option value="CEDULA_CIUDADANIA">Cédula de ciudadanía (CC)</option>
+            <option value="CEDULA_EXTRANJERIA">Cédula de extranjería (CE)</option>
+            <option value="PASAPORTE">Pasaporte</option>
+            <option value="REGISTRO_CIVIL">Registro civil</option>
+            <option value="NIT">NIT</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-700">Número de documento <span class="text-red-500">*</span></label>
+          <input type="text" name="documentNumber" id="documentNumber" required 
+                 pattern="[0-9]+" maxlength="10"
+                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                 placeholder="Solo números (máximo 10 dígitos)"/>
+          <span id="errorDoc" class="text-red-500 text-xs hidden">Solo se permiten números</span>
+        </div>
+        <div>
+          <label class="block text-gray-700">Teléfono <span class="text-red-500">*</span></label>
+          <input type="text" name="phone" id="phone" required 
+                 pattern="[0-9]{7,10}" maxlength="10"
+                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                 placeholder="Solo números (7-10 dígitos)"/>
+          <span id="errorPhone" class="text-red-500 text-xs hidden">Ingresa un teléfono válido (7-10 dígitos)</span>
+        </div>
+        <div>
+          <label class="block text-gray-700">Contraseña <span class="text-red-500">*</span></label>
+          <input type="password" name="password" id="password" required 
+                 pattern="(?=.*[a-zA-Z])(?=.*[0-9]).{8,}"
+                 class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                 placeholder="Mínimo 8 caracteres (letras y números)"/>
+          <span id="errorPassword" class="text-red-500 text-xs hidden">La contraseña debe tener mínimo 8 caracteres, incluyendo letras y números</span>
+        </div>
+        <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded font-medium transition">
+          Registrarse
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-gray-600 mt-4">
+        ¿Ya tienes cuenta? <a href="/auth/login" class="text-red-500 hover:underline">Inicia sesión aquí</a>
+      </p>
+    </div>
+  </section>
+
+  <script>
+    function validarFormulario() {
+      let valido = true;
+      
+      // Validar nombre
+      const name = document.getElementById('name');
+      const errorName = document.getElementById('errorName');
+      if (name.value.length < 8) {
+        errorName.classList.remove('hidden');
+        valido = false;
+      } else {
+        errorName.classList.add('hidden');
+      }
+      
+      // Validar email
+      const email = document.getElementById('email');
+      const errorEmail = document.getElementById('errorEmail');
+      const emailPattern = /^[a-zA-Z0-9._%+-]{6,}@(gmail|hotmail|outlook|yahoo)\.(com|es|co)$/;
+      if (!emailPattern.test(email.value)) {
+        errorEmail.classList.remove('hidden');
+        valido = false;
+      } else {
+        errorEmail.classList.add('hidden');
+      }
+      
+      // Validar documento
+      const doc = document.getElementById('documentNumber');
+      const errorDoc = document.getElementById('errorDoc');
+      if (!/^[0-9]+$/.test(doc.value)) {
+        errorDoc.classList.remove('hidden');
+        valido = false;
+      } else {
+        errorDoc.classList.add('hidden');
+      }
+      
+      // Validar teléfono
+      const phone = document.getElementById('phone');
+      const errorPhone = document.getElementById('errorPhone');
+      if (!/^[0-9]{7,10}$/.test(phone.value)) {
+        errorPhone.classList.remove('hidden');
+        valido = false;
+      } else {
+        errorPhone.classList.add('hidden');
+      }
+      
+      // Validar contraseña
+      const password = document.getElementById('password');
+      const errorPassword = document.getElementById('errorPassword');
+      if (!/(?=.*[a-zA-Z])(?=.*[0-9]).{8,}/.test(password.value)) {
+        errorPassword.classList.remove('hidden');
+        valido = false;
+      } else {
+        errorPassword.classList.add('hidden');
+      }
+      
+      return valido;
+    }
+    
+    // Validación en tiempo real
+    document.getElementById('name').addEventListener('input', function() {
+      const errorName = document.getElementById('errorName');
+      if (this.value.length >= 8) {
+        errorName.classList.add('hidden');
+      }
+    });
+    
+    document.getElementById('email').addEventListener('input', function() {
+      const errorEmail = document.getElementById('errorEmail');
+      const emailPattern = /^[a-zA-Z0-9._%+-]{6,}@(gmail|hotmail|outlook|yahoo)\.(com|es|co)$/;
+      if (emailPattern.test(this.value)) {
+        errorEmail.classList.add('hidden');
+      }
+    });
+    
+    document.getElementById('documentNumber').addEventListener('input', function() {
+      const errorDoc = document.getElementById('errorDoc');
+      this.value = this.value.replace(/[^0-9]/g, '');
+      if (/^[0-9]+$/.test(this.value)) {
+        errorDoc.classList.add('hidden');
+      }
+    });
+    
+    document.getElementById('phone').addEventListener('input', function() {
+      const errorPhone = document.getElementById('errorPhone');
+      this.value = this.value.replace(/[^0-9]/g, '');
+      if (/^[0-9]{7,10}$/.test(this.value)) {
+        errorPhone.classList.add('hidden');
+      }
+    });
+    
+    document.getElementById('password').addEventListener('input', function() {
+      const errorPassword = document.getElementById('errorPassword');
+      if (/(?=.*[a-zA-Z])(?=.*[0-9]).{8,}/.test(this.value)) {
+        errorPassword.classList.add('hidden');
+      }
+    });
+  </script>
+
+</body>
+</html>

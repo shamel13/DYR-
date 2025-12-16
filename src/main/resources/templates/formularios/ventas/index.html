@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Ventas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<div class="container mx-auto px-6 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <a th:href="@{/dashboard/home}" 
+       class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg shadow hover:shadow-md transition">
+      <i class="fas fa-arrow-left mr-2"></i> Volver al Dashboard
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <div class="flex items-center gap-4 mb-6">
+      <div class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-lg">
+        <i class="fas fa-cash-register text-3xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Gestión de Ventas</h1>
+        <p class="text-gray-600">Historial y reportes de ventas</p>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div th:if="${success}" class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded mb-6 flex items-center gap-3">
+      <i class="fas fa-check-circle text-xl"></i>
+      <span th:text="${success}"></span>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" th:action="@{/ventas}" class="bg-gradient-to-r from-gray-50 to-green-50 p-6 rounded-lg mb-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fas fa-filter text-green-500 mr-2"></i>Filtros de Búsqueda
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-user text-green-500"></i> Cliente
+          </label>
+          <input type="text" name="cliente" th:value="${param.cliente}" 
+                 placeholder="Buscar por cliente..." 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-box text-green-500"></i> Producto
+          </label>
+          <input type="text" name="producto" th:value="${param.producto}" 
+                 placeholder="Buscar por producto..." 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-calendar text-green-500"></i> Fecha Inicio
+          </label>
+          <input type="date" name="fechaInicio" th:value="${param.fechaInicio}" 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-calendar text-green-500"></i> Fecha Fin
+          </label>
+          <input type="date" name="fechaFin" th:value="${param.fechaFin}" 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-dollar-sign text-green-500"></i> Monto Mínimo
+          </label>
+          <input type="number" name="montoMin" th:value="${param.montoMin}" step="0.01"
+                 placeholder="Ej: 1000" 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-dollar-sign text-green-500"></i> Monto Máximo
+          </label>
+          <input type="number" name="montoMax" th:value="${param.montoMax}" step="0.01"
+                 placeholder="Ej: 50000" 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        </div>
+      </div>
+      <div class="flex gap-3 flex-wrap">
+        <button type="submit" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center gap-2">
+          <i class="fas fa-search"></i> Filtrar
+        </button>
+        <a th:href="@{/ventas}" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500 transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Limpiar
+        </a>
+        <a th:href="@{/ventas/export/pdf(cliente=${param.cliente},producto=${param.producto},fechaInicio=${param.fechaInicio},fechaFin=${param.fechaFin},montoMin=${param.montoMin},montoMax=${param.montoMax})}" 
+           class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition flex items-center gap-2 ml-auto">
+          <i class="fas fa-file-pdf"></i> Exportar PDF
+        </a>
+        <a th:href="@{/ventas/export/excel(cliente=${param.cliente},producto=${param.producto},fechaInicio=${param.fechaInicio},fechaFin=${param.fechaFin},montoMin=${param.montoMin},montoMax=${param.montoMax})}" 
+           class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+          <i class="fas fa-file-excel"></i> Exportar Excel
+        </a>
+      </div>
+    </form>
+
+    <!-- Resumen de Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-3xl font-bold" th:text="${#lists.size(ventas.?[estado != 'Reembolso' and estado != 'Cancelado'])}">0</div>
+            <div class="text-sm opacity-90">Total de Ventas</div>
+          </div>
+          <i class="fas fa-shopping-cart text-4xl opacity-20"></i>
+        </div>
+      </div>
+      <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-3xl font-bold" th:text="'$' + ${#numbers.formatDecimal(#lists.isEmpty(ventas.?[estado != 'Reembolso' and estado != 'Cancelado']) ? 0 : #aggregates.sum(ventas.?[estado != 'Reembolso' and estado != 'Cancelado'].![total]), 1, 'COMMA', 2, 'POINT')}">$0</div>
+            <div class="text-sm opacity-90">Ingresos Totales</div>
+          </div>
+          <i class="fas fa-dollar-sign text-4xl opacity-20"></i>
+        </div>
+      </div>
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-3xl font-bold" th:text="${#lists.isEmpty(ventas.?[estado != 'Reembolso' and estado != 'Cancelado']) ? 0 : #aggregates.sum(ventas.?[estado != 'Reembolso' and estado != 'Cancelado'].![cantidad])}">0</div>
+            <div class="text-sm opacity-90">Productos Vendidos</div>
+          </div>
+          <i class="fas fa-box text-4xl opacity-20"></i>
+        </div>
+      </div>
+      <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-3xl font-bold" th:text="'$' + ${#numbers.formatDecimal(#lists.isEmpty(ventas.?[estado != 'Reembolso' and estado != 'Cancelado']) ? 0 : (#aggregates.sum(ventas.?[estado != 'Reembolso' and estado != 'Cancelado'].![total]) / #lists.size(ventas.?[estado != 'Reembolso' and estado != 'Cancelado'])), 1, 'COMMA', 2, 'POINT')}">$0</div>
+            <div class="text-sm opacity-90">Venta Promedio</div>
+          </div>
+          <i class="fas fa-chart-line text-4xl opacity-20"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="overflow-x-auto rounded-lg border border-gray-200">
+      <div th:if="${#lists.isEmpty(ventas)}" class="text-center py-12">
+        <i class="fas fa-shopping-cart text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay ventas registradas</p>
+      </div>
+      <table th:if="${!#lists.isEmpty(ventas)}" class="w-full">
+        <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
+          <tr>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-hashtag text-green-500 mr-2"></i>ID
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-user text-green-500 mr-2"></i>Cliente
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-box text-green-500 mr-2"></i>Producto
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-sort-numeric-up text-green-500 mr-2"></i>Cantidad
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-dollar-sign text-green-500 mr-2"></i>Total
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-calendar text-green-500 mr-2"></i>Fecha
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-info-circle text-green-500 mr-2"></i>Estado
+            </th>
+            <th class="p-4 text-center font-semibold text-gray-700">
+              <i class="fas fa-cogs text-green-500 mr-2"></i>Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="v : ${ventas}" class="border-t hover:bg-green-50 transition">
+            <td class="p-4 font-medium text-gray-600" th:text="${v.id}"></td>
+            <td class="p-4 text-gray-800" th:text="${v.cliente != null ? v.cliente.nombre : 'N/A'}"></td>
+            <td class="p-4 text-gray-800" th:text="${v.producto != null ? v.producto.nombre : 'N/A'}"></td>
+            <td class="p-4 text-gray-600" th:text="${v.cantidad}"></td>
+            <td class="p-4 font-semibold text-green-600" th:text="'$' + ${#numbers.formatDecimal(v.total,1,'COMMA',2,'POINT')}"></td>
+            <td class="p-4 text-gray-600" th:text="${#temporals.format(v.fechaVenta,'dd/MM/yyyy')}"></td>
+            <td class="p-4">
+              <span class="px-3 py-1 rounded-full text-sm font-semibold"
+                    th:class="${'px-3 py-1 rounded-full text-sm font-semibold ' + 
+                             (v.estado == 'Completado' ? 'bg-green-100 text-green-700' : 
+                             (v.estado == 'Reembolso' ? 'bg-yellow-100 text-yellow-700' : 
+                             (v.estado == 'Cancelado' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700')))}"
+                    th:text="${v.estado != null ? v.estado : 'Completado'}">Completado</span>
+            </td>
+            <td class="p-4">
+              <div class="flex justify-center gap-2">
+                <a th:href="@{/ventas/{id}(id=${v.id})}" 
+                   class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1 text-sm"
+                   title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <form th:action="@{/ventas/{id}/delete(id=${v.id})}" method="post" 
+                      onsubmit="return confirm('¿Eliminar esta venta?');" class="inline">
+                </form>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

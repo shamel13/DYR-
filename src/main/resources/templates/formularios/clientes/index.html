@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Clientes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<div class="container mx-auto px-6 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <a th:href="@{/dashboard/home}" 
+       class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg shadow hover:shadow-md transition">
+      <i class="fas fa-arrow-left mr-2"></i> Volver al Dashboard
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+    <div class="flex items-center gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-lg">
+        <i class="fas fa-users text-3xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Gestión de Clientes</h1>
+        <p class="text-gray-600">Administra los usuarios registrados en el sistema</p>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div th:if="${success}" class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded mb-6 flex items-center gap-3">
+      <i class="fas fa-check-circle text-xl"></i>
+      <span th:text="${success}"></span>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" th:action="@{/clientes}" class="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-user text-blue-500"></i> Nombre
+          </label>
+          <input type="text" name="nombre" th:value="${param.nombre}" 
+                 placeholder="Buscar por nombre..." 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-envelope text-blue-500"></i> Email
+          </label>
+          <input type="text" name="email" th:value="${param.email}" 
+                 placeholder="Buscar por email..." 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-phone text-blue-500"></i> Teléfono
+          </label>
+          <input type="text" name="telefono" th:value="${param.telefono}" 
+                 placeholder="Buscar por teléfono..." 
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-2">
+          <i class="fas fa-search"></i> Filtrar
+        </button>
+        <a th:href="@{/clientes}" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500 transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Limpiar
+        </a>
+        <a th:href="@{/clientes/export/pdf(nombre=${param.nombre},email=${param.email},telefono=${param.telefono})}" 
+           class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition flex items-center gap-2 ml-auto">
+          <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a th:href="@{/clientes/export/excel(nombre=${param.nombre},email=${param.email},telefono=${param.telefono})}" 
+           class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+          <i class="fas fa-file-excel"></i> Excel
+        </a>
+      </div>
+    </form>
+
+    <!-- Tabla -->
+    <div class="overflow-x-auto rounded-lg border border-gray-200">
+      <div th:if="${#lists.isEmpty(usuarios)}" class="text-center py-12">
+        <i class="fas fa-user-slash text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay clientes registrados</p>
+      </div>
+      <table th:if="${!#lists.isEmpty(usuarios)}" class="w-full">
+        <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
+          <tr>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-hashtag text-blue-500 mr-2"></i>ID
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-id-card text-blue-500 mr-2"></i>Nombre
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-envelope text-blue-500 mr-2"></i>Email
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-phone text-blue-500 mr-2"></i>Teléfono
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-file-alt text-blue-500 mr-2"></i>Documento
+            </th>
+            <th class="p-4 text-left font-semibold text-gray-700">
+              <i class="fas fa-circle text-blue-500 mr-2"></i>Estado
+            </th>
+            <th class="p-4 text-center font-semibold text-gray-700">
+              <i class="fas fa-cogs text-blue-500 mr-2"></i>Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="u : ${usuarios}" class="border-t hover:bg-blue-50 transition">
+            <td class="p-4 text-gray-600" th:text="${u.id}"></td>
+            <td class="p-4 font-medium" th:text="${u.name}"></td>
+            <td class="p-4 text-gray-600" th:text="${u.email}"></td>
+            <td class="p-4 text-gray-600" th:text="${u.phone} ?: 'N/A'"></td>
+            <td class="p-4 text-gray-600">
+              <span th:if="${u.documentType != null && u.documentNumber != null}">
+                <span th:text="${u.documentType}"></span>: <span th:text="${u.documentNumber}"></span>
+              </span>
+              <span th:if="${u.documentType == null || u.documentNumber == null}" class="text-gray-400">N/A</span>
+            </td>
+            <td class="p-4">
+              <span th:if="${u.estado == 'activo' || u.estado == null}" 
+                    class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                <i class="fas fa-check-circle mr-1"></i>Activo
+              </span>
+              <span th:if="${u.estado == 'inactivo'}" 
+                    class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+                <i class="fas fa-times-circle mr-1"></i>Inactivo
+              </span>
+            </td>
+            <td class="p-4">
+              <div class="flex justify-center gap-2">
+                <!-- Botón Ver -->
+                <a th:href="@{/clientes/{id}(id=${u.id})}" 
+                   class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1 text-sm"
+                   title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </a>
+                
+                <!-- Botón Editar -->
+                <a th:href="@{/clientes/{id}/edit(id=${u.id})}" 
+                   class="bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 transition flex items-center gap-1 text-sm"
+                   title="Editar">
+                  <i class="fas fa-edit"></i>
+                </a>
+                
+                <!-- Botón Inactivar (si está activo) -->
+                <form th:if="${u.estado == 'activo' || u.estado == null}" 
+                      th:action="@{/clientes/{id}/delete(id=${u.id})}" method="post" 
+                      onsubmit="return confirm('¿Estás seguro de inactivar este cliente?');" 
+                      class="inline">
+                  <button type="submit" 
+                          class="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 transition flex items-center gap-1 text-sm"
+                          title="Inactivar">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                </form>
+                
+                <!-- Botón Activar (si está inactivo) -->
+                <form th:if="${u.estado == 'inactivo'}" 
+                      th:action="@{/clientes/{id}/activate(id=${u.id})}" method="post" 
+                      onsubmit="return confirm('¿Estás seguro de activar este cliente?');" 
+                      class="inline">
+                  <button type="submit" 
+                          class="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center gap-1 text-sm"
+                          title="Activar">
+                    <i class="fas fa-check-circle"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

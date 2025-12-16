@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acerca de - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- NAVBAR -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4 flex flex-wrap items-center justify-between">
+      <!-- Logo -->
+      <a th:href="@{/pagina/index}" class="text-2xl font-bold text-red-500 flex items-center gap-2">
+        <i class="fas fa-tshirt"></i>
+        <span>DYR</span>
+      </a>
+
+      <!-- Menú móvil toggle -->
+      <button id="menu-toggle" class="md:hidden text-gray-800 focus:outline-none">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+
+      <!-- Menú desktop -->
+      <ul id="menu" class="hidden md:flex items-center space-x-6 text-gray-700 font-medium">
+        <li><a th:href="@{/pagina/index}" class="hover:text-red-500 transition">Inicio</a></li>
+        <li><a th:href="@{/pagina/catalogo}" class="hover:text-red-500 transition">Catálogo</a></li>
+        <li><a th:href="@{/pagina/acerca}" class="hover:text-red-500 transition">Acerca</a></li>
+
+        <!-- Si NO hay sesión iniciada -->
+        <li th:if="${currentUserName == null}">
+          <a th:href="@{/auth/login}" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full transition">
+            Iniciar sesión
+          </a>
+        </li>
+
+        <!-- Si SÍ hay sesión iniciada -->
+        <li th:if="${currentUserName != null}" class="relative group">
+          <button class="flex items-center space-x-2 text-gray-800 hover:text-red-500 transition">
+            <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">
+              <span th:text="${#strings.substring(currentUserName, 0, 1).toUpperCase()}">U</span>
+            </div>
+            <span class="hidden lg:inline" th:text="${currentUserName}">Usuario</span>
+            <i class="fas fa-chevron-down text-sm"></i>
+          </button>
+          <ul class="absolute right-0 top-full pt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <li>
+              <a th:href="@{/auth/profile}" class="block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-user mr-2"></i> Perfil
+              </a>
+            </li>
+            <li>
+              <button th:onclick="'window.location.href=\'/auth/logout\''" class="w-full text-left block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+              </button>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Menú móvil desplegable -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 mt-2 py-4 px-6 space-y-4 text-gray-700 font-medium">
+      <a th:href="@{/pagina/index}" class="block hover:text-red-500 transition">Inicio</a>
+      <a th:href="@{/pagina/catalogo}" class="block hover:text-red-500 transition">Catálogo</a>
+      <a th:href="@{/pagina/acerca}" class="block hover:text-red-500 transition">Acerca</a>
+
+      <div th:if="${currentUserName == null}">
+        <a th:href="@{/auth/login}" class="block bg-red-500 hover:bg-red-600 text-white text-center px-5 py-2 rounded-full transition">
+          Iniciar sesión
+        </a>
+      </div>
+
+      <div th:if="${currentUserName != null}" class="space-y-2">
+        <p class="text-gray-500 text-sm" th:text="'Hola, ' + ${currentUserName}">Hola, Usuario</p>
+        <a th:href="@{/auth/profile}" class="block hover:text-red-500 transition"><i class="fas fa-user mr-2"></i> Perfil</a>
+        <button th:onclick="'window.location.href=\'/auth/logout\''" class="w-full text-left hover:text-red-500 transition">
+          <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    toggle.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+    });
+  </script>
+
+  <!-- Sección Principal -->
+  <section class="py-20 bg-gray-50">
+    <div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+      <div class="md:w-1/2">
+        <img src="https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=900&q=80" 
+             alt="Foto de una mujer usando chaqueta DYR" class="rounded-2xl shadow-lg">
+      </div>
+      <div class="md:w-1/2">
+        <h2 class="text-4xl font-bold mb-4">Sobre DYR</h2>
+        <p class="text-lg mb-4 text-gray-600">
+          DYR es una marca colombiana dedicada a la confección de chaquetas de cuero sintético para mujeres con estilo.
+          Combinamos tradición artesanal con tendencias actuales, creando piezas únicas que resaltan la elegancia y fortaleza femenina.
+        </p>
+        <p class="text-lg mb-4 text-gray-600">
+          Con más de 10 años en el mercado, seguimos comprometidos con la calidad, el diseño consciente y el orgullo de vestir lo hecho en Colombia.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Historia -->
+  <section class="py-16 bg-white">
+    <div class="container mx-auto px-6 text-center max-w-4xl">
+      <h2 class="text-3xl font-bold mb-6">Nuestra Historia</h2>
+      <p class="text-lg text-gray-600">
+        DYR nació de una pasión por el diseño y el cuero sintético. Comenzamos en un pequeño taller en Bogotá,
+        confeccionando chaquetas a mano, una por una. Con esfuerzo, constancia y amor por el detalle,
+        logramos posicionarnos como una marca que representa autenticidad, empoderamiento y orgullo colombiano.
+      </p>
+    </div>
+  </section>
+
+  <!-- Misión, Visión y Valores -->
+  <section class="py-20 bg-gray-100">
+    <div class="container mx-auto px-6 max-w-5xl space-y-16">
+
+      <!-- Misión -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-4 text-center">Nuestra Misión</h3>
+        <p class="text-lg text-gray-600 text-justify">
+          En DYR, nuestra misión es confeccionar prendas de cuero sintético de alta calidad que no solo resalten el estilo de nuestras clientas,
+          sino que también transmitan fuerza, autenticidad y sofisticación. Nos esforzamos cada día por promover el trabajo local,
+          el diseño sostenible y la innovación textil para construir una industria de la moda más ética y consciente en Colombia.
+        </p>
+      </div>
+
+      <!-- Visión -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-4 text-center">Nuestra Visión</h3>
+        <p class="text-lg text-gray-600 text-justify">
+          Queremos ser reconocidos como la marca de referencia en Latinoamérica en prendas femeninas de cuero sintético,
+          destacándonos por nuestra responsabilidad ambiental, nuestra conexión con la cultura y nuestras prácticas comerciales justas.
+          Soñamos con vestir a mujeres líderes, creativas y fuertes, en cualquier parte del mundo, con orgullo colombiano.
+        </p>
+      </div>
+
+      <!-- Valores -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-4 text-center">Nuestros Valores</h3>
+        <div class="grid md:grid-cols-3 gap-6 text-center text-gray-700 text-lg">
+          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+            <i class="fas fa-star text-red-500 text-2xl mb-2"></i>
+            <p class="font-semibold">Calidad</p>
+            <p class="text-sm mt-2">Prendas duraderas y detalladas con materiales seleccionados cuidadosamente.</p>
+          </div>
+          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+            <i class="fas fa-users text-red-500 text-2xl mb-2"></i>
+            <p class="font-semibold">Compromiso</p>
+            <p class="text-sm mt-2">Con nuestros clientes, trabajadores y con el crecimiento de la industria nacional.</p>
+          </div>
+          <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+            <i class="fas fa-leaf text-red-500 text-2xl mb-2"></i>
+            <p class="font-semibold">Sostenibilidad</p>
+            <p class="text-sm mt-2">Procesos amigables con el medio ambiente y éticos con el entorno social.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div>
+        <div class="flex items-center text-2xl font-bold mb-4">
+          <i class="fa-solid fa-shirt text-red-500 mr-2"></i>
+          <span>DYR</span>
+        </div>
+        <p class="text-gray-400">
+          Chaquetas de cuero sintético hechas en Colombia con estilo, calidad y carácter.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-4 text-white">Enlaces</h3>
+        <ul class="space-y-2 text-gray-400">
+          <li><a th:href="@{/pagina/index}" class="hover:text-orange-500 transition">Inicio</a></li>
+          <li><a th:href="@{/pagina/catalogo}" class="hover:text-orange-500 transition">Productos</a></li>
+          <li><a th:href="@{/pagina/acerca}" class="hover:text-orange-500 transition">Nosotros</a></li>
+          <li><a th:href="@{/auth/login}" class="hover:text-orange-500 transition">Iniciar sesión</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-4 text-white">Contáctanos</h3>
+        <ul class="space-y-2 text-gray-400">
+          <li><i class="fas fa-phone-alt mr-2 text-red-500"></i> +57 301 456 7890</li>
+          <li><i class="fas fa-envelope mr-2 text-red-500"></i> contacto@dyr.com</li>
+          <li><i class="fas fa-map-marker-alt mr-2 text-red-500"></i> Bogotá, Colombia</li>
+        </ul>
+      </div>
+
+      <!-- Redes Sociales -->
+        <div>
+            <h3 class="text-lg font-semibold mb-4 text-white">Síguenos</h3>
+            <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-orange-500 transition">
+                <i class="fab fa-facebook-f fa-lg"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-orange-500 transition">
+                <i class="fab fa-instagram fa-lg"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-orange-500 transition">
+                <i class="fab fa-twitter fa-lg"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-orange-500 transition">
+                <i class="fab fa-pinterest fa-lg"></i>
+            </a>
+            </div>
+        </div>
+        <!-- Línea divisoria -->
+        <div class="border-t border-gray-700 mt-12 pt-6 text-center text-sm text-gray-500">
+      © 2025 DYR. Todos los derechos reservados.
+    </div>
+  </footer>
+
+  <script src="js/js1.js"></script>
+</body>
+</html>

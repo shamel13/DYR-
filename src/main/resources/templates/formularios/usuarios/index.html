@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuarios registrados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 text-gray-800">
+<div class="mb-6 flex justify-between items-center">
+  <a th:href="@{/clientes}" class="px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition">← Volver a clientes</a>
+  <h1 class="text-2xl font-bold">Usuarios registrados</h1>
+</div>
+
+<div th:if="${success}" class="bg-green-100 text-green-700 p-3 rounded mb-4" th:text="${success}"></div>
+
+<div class="bg-white shadow rounded p-4">
+  <div th:if="${#lists.isEmpty(usuarios)}" class="text-gray-500">Aún no hay usuarios registrados (no se muestran administradores).</div>
+  <table th:if="${!#lists.isEmpty(usuarios)}" class="w-full text-left">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="p-2">ID</th>
+        <th class="p-2">Usuario</th>
+        <th class="p-2">Nombre</th>
+        <th class="p-2">Email</th>
+        <th class="p-2">Rol</th>
+        <th class="p-2">Estado</th>
+        <th class="p-2">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="u : ${usuarios}" class="border-t">
+        <td class="p-2" th:text="${u.id}"></td>
+        <td class="p-2" th:text="${u.username}"></td>
+        <td class="p-2" th:text="${u.name}"></td>
+        <td class="p-2" th:text="${u.email}"></td>
+        <td class="p-2" th:text="${u.role}"></td>
+        <td class="p-2" th:text="${u.estado}"></td>
+        <td class="p-2 space-x-2">
+          <a th:href="@{/usuarios/{id}(id=${u.id})}" class="text-blue-600">👁️ Ver</a>
+          <a th:href="@{/usuarios/{id}/edit(id=${u.id})}" class="text-green-600">✏️ Editar</a>
+          <form th:action="@{/usuarios/{id}/delete(id=${u.id})}" method="post" class="inline" th:if="${u.estado == 'activo'}" onsubmit="return confirm('¿Inhabilitar usuario?');">
+            <button type="submit" class="text-red-600">🚫 Inhabilitar</button>
+          </form>
+          <form th:action="@{/usuarios/{id}/enable(id=${u.id})}" method="post" class="inline" th:if="${u.estado == 'inactivo'}" onsubmit="return confirm('¿Habilitar usuario?');">
+            <button type="submit" class="text-green-600">✅ Habilitar</button>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

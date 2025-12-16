@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Perfil - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- NAVBAR -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4 flex flex-wrap items-center justify-between">
+      <!-- Logo -->
+      <a th:href="@{/pagina/index}" class="text-2xl font-bold text-red-500 flex items-center gap-2">
+        <i class="fas fa-tshirt"></i>
+        <span>DYR</span>
+      </a>
+
+      <!-- Menú móvil toggle -->
+      <button id="menu-toggle" class="md:hidden text-gray-800 focus:outline-none">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+
+      <!-- Menú desktop -->
+      <ul id="menu" class="hidden md:flex items-center space-x-6 text-gray-700 font-medium">
+        <li><a th:href="@{/pagina/index}" class="hover:text-red-500 transition">Inicio</a></li>
+        <li><a th:href="@{/pagina/catalogo}" class="hover:text-red-500 transition">Catálogo</a></li>
+        <li><a th:href="@{/pagina/acerca}" class="hover:text-red-500 transition">Acerca</a></li>
+
+        <!-- Si NO hay sesión iniciada -->
+        <li th:if="${currentUserName == null}">
+          <a th:href="@{/auth/login}" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full transition">
+            Iniciar sesión
+          </a>
+        </li>
+
+        <!-- Si SÍ hay sesión iniciada -->
+        <li th:if="${currentUserName != null}" class="relative group">
+          <button class="flex items-center space-x-2 text-gray-800 hover:text-red-500 transition">
+            <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">
+              <span th:text="${#strings.substring(currentUserName, 0, 1).toUpperCase()}">U</span>
+            </div>
+            <span class="hidden lg:inline" th:text="${currentUserName}">Usuario</span>
+            <i class="fas fa-chevron-down text-sm"></i>
+          </button>
+          <ul class="absolute right-0 top-full pt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <li>
+              <a th:href="@{/auth/profile}" class="block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-user mr-2"></i> Perfil
+              </a>
+            </li>
+            <li>
+              <button th:onclick="'window.location.href=\'/auth/logout\''" class="w-full text-left block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition">
+                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+              </button>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Menú móvil desplegable -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 mt-2 py-4 px-6 space-y-4 text-gray-700 font-medium">
+      <a th:href="@{/pagina/index}" class="block hover:text-red-500 transition">Inicio</a>
+      <a th:href="@{/pagina/catalogo}" class="block hover:text-red-500 transition">Catálogo</a>
+      <a th:href="@{/pagina/acerca}" class="block hover:text-red-500 transition">Acerca</a>
+
+      <div th:if="${currentUserName == null}">
+        <a th:href="@{/auth/login}" class="block bg-red-500 hover:bg-red-600 text-white text-center px-5 py-2 rounded-full transition">
+          Iniciar sesión
+        </a>
+      </div>
+
+      <div th:if="${currentUserName != null}" class="space-y-2">
+        <p class="text-gray-500 text-sm" th:text="'Hola, ' + ${currentUserName}">Hola, Usuario</p>
+        <a th:href="@{/auth/profile}" class="block hover:text-red-500 transition"><i class="fas fa-user mr-2"></i> Perfil</a>
+        <button th:onclick="'window.location.href=\'/auth/logout\''" class="w-full text-left hover:text-red-500 transition">
+          <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    toggle.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+    });
+  </script>
+
+  <section class="py-20 bg-gradient-to-br from-gray-50 via-red-50 to-gray-100 min-h-screen">
+    <div class="container mx-auto px-6">
+      <!-- Header del perfil -->
+      <div class="max-w-5xl mx-auto mb-8">
+        <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-t-2xl p-8 text-white relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32"></div>
+          <div class="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
+          <div class="relative z-10 flex items-center gap-6">
+            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-xl">
+              <span class="text-4xl font-bold text-red-500" th:text="${#strings.substring(currentUserName, 0, 1).toUpperCase()}">U</span>
+            </div>
+            <div>
+              <h1 class="text-3xl font-bold mb-2" th:text="${currentUserName}">Mi Perfil</h1>
+              <p class="text-red-100 flex items-center gap-2">
+                <i class="fas fa-envelope"></i>
+                <span th:text="${usuario.email}">email@ejemplo.com</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <div class="max-w-5xl mx-auto">
+        <form th:action="@{/auth/profile}" th:object="${usuario}" method="post" class="space-y-6">
+          <input type="hidden" th:field="*{id}" />
+
+          <!-- Grid de 2 columnas -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Información Personal -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.02] transition duration-300">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-lg">
+                  <i class="fas fa-user text-2xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800">Información Personal</h3>
+              </div>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-id-badge text-blue-500 mr-1"></i> Nombre completo
+                  </label>
+                  <input type="text" th:field="*{name}" required minlength="8"
+                         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"/>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-envelope text-blue-500 mr-1"></i> Email
+                  </label>
+                  <input type="email" th:field="*{email}" required
+                         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"/>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-phone text-blue-500 mr-1"></i> Teléfono
+                  </label>
+                  <input type="text" th:field="*{phone}" pattern="[0-9]{7,10}" maxlength="10"
+                         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"/>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-id-card text-blue-500 mr-1"></i> Tipo documento
+                    </label>
+                    <select th:field="*{documentType}" class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+                      <option value="CEDULA_CIUDADANIA">CC</option>
+                      <option value="CEDULA_EXTRANJERIA">CE</option>
+                      <option value="PASAPORTE">Pasaporte</option>
+                      <option value="REGISTRO_CIVIL">RC</option>
+                      <option value="NIT">NIT</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-hashtag text-blue-500 mr-1"></i> Número
+                    </label>
+                    <input type="text" th:field="*{documentNumber}" pattern="[0-9]{1,10}" maxlength="10"
+                           class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"/>
+                  </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200">
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-lock text-blue-500 mr-1"></i> Nueva contraseña 
+                    <span class="text-xs font-normal text-gray-500">(dejar vacío para no cambiar)</span>
+                  </label>
+                  <input type="password" th:field="*{password}" placeholder="••••••••"
+                         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dirección -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.02] transition duration-300">
+              <div class="flex items-center gap-3 mb-6">
+                <div class="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-lg">
+                  <i class="fas fa-map-marker-alt text-2xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800">Dirección</h3>
+              </div>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-home text-green-500 mr-1"></i> Dirección completa
+                  </label>
+                  <input type="text" th:field="*{address}" placeholder="Calle, número, apto"
+                         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"/>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-map text-green-500 mr-1"></i> Barrio
+                  </label>
+                  <input type="text" th:field="*{neighborhood}" placeholder="Nombre del barrio"
+                         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"/>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-city text-green-500 mr-1"></i> Ciudad
+                    </label>
+                    <input type="text" th:field="*{city}" placeholder="Ciudad"
+                           class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"/>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                      <i class="fas fa-mail-bulk text-green-500 mr-1"></i> C. Postal
+                    </label>
+                    <input type="text" th:field="*{postalCode}" placeholder="110111"
+                           class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"/>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-globe text-green-500 mr-1"></i> País
+                  </label>
+                  <input type="text" th:field="*{country}" placeholder="Colombia"
+                         class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"/>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                  <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                      <i class="fas fa-info-circle text-green-600 text-xl mt-1"></i>
+                      <div>
+                        <h4 class="font-semibold text-gray-800 mb-1">Información importante</h4>
+                        <p class="text-sm text-gray-600">Mantén actualizada tu información de contacto y dirección para un mejor servicio.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="flex justify-end gap-4 pt-4">
+            <a th:href="@{/pagina/index}" 
+               class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition transform hover:scale-105 flex items-center gap-2">
+              <i class="fas fa-times"></i> Cancelar
+            </a>
+            <button type="submit" 
+                    class="px-8 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-semibold transition transform hover:scale-105 shadow-lg flex items-center gap-2">
+              <i class="fas fa-save"></i> Guardar cambios
+            </button>
+          </div>
+        </form>
+
+        <!-- Historial de Compras -->
+        <div class="mt-12">
+          <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-lg">
+                <i class="fas fa-shopping-bag text-2xl text-white"></i>
+              </div>
+              <h3 class="text-2xl font-bold text-gray-800">Historial de Compras</h3>
+            </div>
+
+            <div th:if="${compras != null and !compras.empty}">
+              <!-- Estadísticas rápidas -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-receipt text-2xl text-purple-600"></i>
+                    <div>
+                      <p class="text-sm text-gray-600">Total de compras</p>
+                      <p class="text-2xl font-bold text-purple-700" th:text="${compras.size()}">0</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-dollar-sign text-2xl text-green-600"></i>
+                    <div>
+                      <p class="text-sm text-gray-600">Total gastado</p>
+                      <p class="text-2xl font-bold text-green-700">
+                        $<span th:text="${#numbers.formatDecimal(totalGastado, 0, 'COMMA', 0, 'POINT')}">0</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
+                  <div class="flex items-center gap-3">
+                    <i class="fas fa-box text-2xl text-blue-600"></i>
+                    <div>
+                      <p class="text-sm text-gray-600">Productos comprados</p>
+                      <p class="text-2xl font-bold text-blue-700" th:text="${totalProductos}">0</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tabla de compras -->
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b-2 border-gray-200">
+                      <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Fecha</th>
+                      <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Producto</th>
+                      <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Cantidad</th>
+                      <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700">Total</th>
+                      <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Estado</th>
+                      <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr th:each="compra : ${compras}" class="border-b border-gray-100 hover:bg-purple-50 transition">
+                      <td class="py-4 px-4">
+                        <div class="flex items-center gap-2">
+                          <i class="fas fa-calendar text-purple-500"></i>
+                          <span class="text-sm text-gray-700" th:text="${#temporals.format(compra.fechaVenta, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                        </div>
+                      </td>
+                      <td class="py-4 px-4">
+                        <div class="flex items-center gap-3">
+                          <img th:if="${compra.producto.imagenUrl != null}" 
+                               th:src="@{${compra.producto.imagenUrl}}"
+                               class="w-12 h-12 rounded-lg object-cover" 
+                               alt="Producto" />
+                          <div th:if="${compra.producto.imagenUrl == null}" 
+                               class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400"></i>
+                          </div>
+                          <div>
+                            <p class="font-semibold text-gray-800" th:text="${compra.producto.nombre}">Producto</p>
+                            <p class="text-xs text-gray-500" th:text="${compra.producto.descripcion}">Descripción</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-4 px-4 text-center">
+                        <span class="inline-flex items-center justify-center bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold">
+                          <i class="fas fa-box mr-1"></i>
+                          <span th:text="${compra.cantidad}">1</span>
+                        </span>
+                      </td>
+                      <td class="py-4 px-4 text-right">
+                        <span class="text-lg font-bold text-gray-800">
+                          $<span th:text="${#numbers.formatDecimal(compra.total, 0, 'COMMA', 0, 'POINT')}">0</span>
+                        </span>
+                      </td>
+                      <td class="py-4 px-4 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                              th:class="${'px-2 py-1 rounded-full text-xs font-semibold ' + 
+                                       ((compra.estado == null or compra.estado == 'Completado') ? 'bg-green-100 text-green-700' : 
+                                       (compra.estado == 'Reembolso' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'))}"
+                              th:text="${compra.estado != null ? compra.estado : 'Completado'}">Completado</span>
+                      </td>
+                      <td class="py-4 px-4 text-center">
+                        <form th:if="${compra.estado == null or compra.estado == 'Completado'}" 
+                              th:action="@{/ventas/{id}/solicitar-reembolso(id=${compra.id})}" 
+                              method="post"
+                              onsubmit="return confirm('¿Estás seguro de que deseas solicitar un reembolso para esta compra?');">
+                          <button type="submit" 
+                                  class="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold transition">
+                            <i class="fas fa-undo"></i> Reembolso
+                          </button>
+                        </form>
+                        <div th:if="${compra.estado == 'Reembolso'}" 
+                             class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-semibold">
+                          <i class="fas fa-clock"></i> En proceso
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Mensaje cuando no hay compras -->
+            <div th:if="${compras == null or compras.empty}" class="text-center py-12">
+              <div class="inline-flex items-center justify-center w-20 h-20 bg-purple-100 rounded-full mb-4">
+                <i class="fas fa-shopping-bag text-3xl text-purple-400"></i>
+              </div>
+              <h4 class="text-xl font-semibold text-gray-700 mb-2">No has realizado compras aún</h4>
+              <p class="text-gray-500 mb-6">Explora nuestro catálogo y realiza tu primera compra</p>
+              <a th:href="@{/pagina/catalogo}" 
+                 class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105">
+                <i class="fas fa-store"></i> Ver Catálogo
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>
+
+<script>
+  // Toggle display of alternate address
+  document.addEventListener('DOMContentLoaded', function(){
+    const toggle = document.getElementById('toggleAlt');
+    const alt = document.getElementById('altSection');
+    if(!toggle || !alt) return;
+    toggle.addEventListener('click', () => {
+      alt.classList.toggle('hidden');
+    });
+    // show alt if any alt field has value
+    const altInputs = alt.querySelectorAll('input');
+    let hasValue = false;
+    altInputs.forEach(i => { if(i && i.value && i.value.trim() !== '') hasValue = true; });
+    if(hasValue) alt.classList.remove('hidden');
+  });
+</script>
