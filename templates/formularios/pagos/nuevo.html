@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Procesar Pago - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Poppins', sans-serif; }
+    .gradient-header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+    .product-card { border-left: 4px solid #ef4444; }
+    .method-card { cursor: pointer; border: 2px solid #e5e7eb; transition: all 0.3s; }
+    .method-card.active { border-color: #ef4444; background: #fee2e2; }
+    .method-card:hover { border-color: #ef4444; }
+    .progress-step { position: relative; }
+    .progress-step.active .circle { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .circle { width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Header -->
+<div class="gradient-header py-8 text-white shadow-lg">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-4xl font-bold mb-2">🛒 Procesar Pago</h1>
+        <p class="text-red-100">Completa tu compra en 3 simples pasos</p>
+      </div>
+      <a href="/pagina/catalogo" class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition">
+        <i class="fas fa-arrow-left"></i> Volver al Catálogo
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="bg-white border-b sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div class="progress-step active">
+        <div class="circle"><i class="fas fa-shopping-bag text-sm"></i></div>
+        <p class="text-xs text-center mt-2 font-semibold">Resumen</p>
+      </div>
+      <div class="flex-1 h-1 bg-gradient-to-r from-red-500 to-red-600 mx-4"></div>
+      <div class="progress-step">
+        <div class="circle"><i class="fas fa-money-bill text-sm"></i></div>
+        <p class="text-xs text-center mt-2 font-semibold">Datos</p>
+      </div>
+      <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+      <div class="progress-step">
+        <div class="circle"><i class="fas fa-check text-sm"></i></div>
+        <p class="text-xs text-center mt-2 font-semibold">Confirmación</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="max-w-7xl mx-auto px-6 py-12">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- estado y mensajes -->
+    <div class="lg:col-span-3 mb-4">
+      {% if messages %}
+        <div class="space-y-2">
+          {% for message in messages %}
+            <div class="rounded-lg p-4 text-sm font-semibold {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% elif message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'info' %}bg-blue-50 text-blue-700 border border-blue-200{% else %}bg-gray-50 text-gray-700 border border-gray-200{% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Carrito/Pedidos -->
+    <div class="lg:col-span-2">
+      <div id="carritoSection" style="display: none;">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-box text-red-500"></i> Artículos en tu carrito
+        </h2>
+        <div class="space-y-4 mb-8" id="carritoItems">
+          <!-- Items generados por JS -->
+        </div>
+      </div>
+
+      <!-- Pedidos Section (Fallback) -->
+      <div id="pedidosSection" class="bg-white rounded-2xl shadow-lg p-8 card-hover">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-list text-red-500"></i> Pedidos Pendientes
+        </h2>
+        {% if pedidos %}
+          <div id="pedidosList" class="space-y-3">
+            {% for pedido in pedidos %}
+              <div class="method-card p-6 rounded-lg" onclick="seleccionarPedido(this, {{ pedido.id }}, {{ pedido.total }})">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="font-bold text-gray-900 text-lg">#{{ pedido.numero_pedido }}</p>
+                    <p class="text-gray-600 text-sm">Cliente: {{ pedido.cliente.nombre }}</p>
+                    <p class="text-gray-500 text-xs mt-1">Estado: <span class="font-semibold">{{ pedido.estado|title }}</span></p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-2xl font-bold text-red-500">${{ pedido.total }}</p>
+                    <p class="text-xs text-gray-500">Pedido creado: {{ pedido.fecha_pedido|date:"d/m/Y" }}</p>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-12">
+            <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+            <p class="text-gray-500">No hay pedidos pendientes de pago.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Resumen de Pago -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-2xl shadow-xl p-8 sticky top-32 card-hover">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <i class="fas fa-receipt text-red-500"></i> Resumen
+        </h3>
+
+        <!-- Total Section -->
+        <div id="totalSection" style="display: none;" class="mb-8 p-6 bg-gradient-to-br from-red-500 to-red-600 rounded-xl text-white">
+          <p class="text-sm text-red-100 mb-2">TOTAL A PAGAR</p>
+          <p class="text-4xl font-bold">$<span id="totalDisplay">0.00</span></p>
+        </div>
+
+        <!-- Form -->
+        <form action="/pagos/nuevo/" method="post" id="paymentForm" class="space-y-5" onsubmit="validarFormulario(event)">
+          {% csrf_token %}
+          <input type="hidden" name="carrito_json" id="carrito_json" value="">
+
+          <!-- Método de Pago -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-3">
+              <i class="fas fa-credit-card text-red-500 mr-1"></i> Método de Pago
+            </label>
+            <div class="space-y-3">
+              <div class="method-card p-4 rounded-lg" onclick="seleccionarMetodo(this, 'tarjeta')">
+                <label class="flex items-center cursor-pointer">
+                  <input type="radio" name="metodo" value="tarjeta" class="w-5 h-5 text-red-500 cursor-pointer" required>
+                  <span class="ml-3 font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-credit-card text-lg text-blue-600"></i> Tarjeta de Crédito
+                  </span>
+                </label>
+              </div>
+              
+              <div class="method-card p-4 rounded-lg" onclick="seleccionarMetodo(this, 'transferencia')">
+                <label class="flex items-center cursor-pointer">
+                  <input type="radio" name="metodo" value="transferencia" class="w-5 h-5 text-red-500 cursor-pointer" required>
+                  <span class="ml-3 font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-bank text-lg text-orange-600"></i> Transferencia
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector Pedido (Fallback) -->
+          <div id="pedidoSelectSection" style="display: none;">
+            <label class="block text-sm font-bold text-gray-700 mb-2">
+              <i class="fas fa-list text-gray-600 mr-1"></i> Selecciona un Pedido
+            </label>
+            <select name="pedido_id" id="pedido_id" class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition font-semibold">
+              <option value="">-- Seleccione pedido --</option>
+              {% for pedido in pedidos %}
+                <option value="{{ pedido.id }}" data-monto="{{ pedido.total }}">
+                  #{{ pedido.numero_pedido }} - ${{ pedido.total }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Monto -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">
+              <i class="fas fa-coins text-yellow-600 mr-1"></i> Monto a Pagar
+            </label>
+            <div class="relative">
+              <span class="absolute left-4 top-3 text-2xl font-bold text-gray-400">$</span>
+              <input type="text" id="monto_display" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 pl-8 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition font-bold text-2xl bg-gray-50" 
+                     disabled>
+              <input type="hidden" name="monto" id="monto">
+            </div>
+          </div>
+
+          <!-- Formulario de Tarjeta (Solo para Tarjeta de Crédito) -->
+          <div id="tarjetaForm" style="display: none;" class="space-y-4 p-6 bg-gray-50 rounded-lg border-2 border-red-200">
+            <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <i class="fas fa-credit-card text-red-500"></i> Datos de la Tarjeta
+            </h4>
+
+            <!-- Nombre Completo -->
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                <i class="fas fa-user text-gray-600 mr-1"></i> Nombre Completo
+              </label>
+              <input type="text" name="nombre_titular" id="nombre_titular" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition"
+                     placeholder="Juan García López" maxlength="100">
+            </div>
+
+            <!-- Número de Tarjeta -->
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                <i class="fas fa-hashtag text-gray-600 mr-1"></i> Número de Tarjeta
+              </label>
+              <input type="text" name="numero_tarjeta" id="numero_tarjeta" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition font-mono"
+                     placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric">
+            </div>
+
+            <!-- Fila: Fecha y CVV -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                  <i class="fas fa-calendar text-gray-600 mr-1"></i> Vencimiento
+                </label>
+                <input type="text" name="vencimiento" id="vencimiento" 
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition font-mono"
+                       placeholder="MM/YY" maxlength="5" inputmode="numeric">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                  <i class="fas fa-lock text-gray-600 mr-1"></i> CVV
+                </label>
+                <input type="text" name="cvv" id="cvv" 
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition font-mono"
+                       placeholder="123" maxlength="4" inputmode="numeric">
+              </div>
+            </div>
+
+            <!-- Dirección -->
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                <i class="fas fa-map-pin text-gray-600 mr-1"></i> Dirección
+              </label>
+              <input type="text" name="direccion" id="direccion" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition"
+                     placeholder="Calle Principal 123" maxlength="150">
+            </div>
+
+            <!-- Fila: Ciudad, Estado, Código Postal -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                  <i class="fas fa-city text-gray-600 mr-1"></i> Ciudad
+                </label>
+                <input type="text" name="ciudad" id="ciudad" 
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition"
+                       placeholder="Bogotá" maxlength="50">
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">
+                  <i class="fas fa-envelope text-gray-600 mr-1"></i> Código Postal
+                </label>
+                <input type="text" name="codigo_postal" id="codigo_postal" 
+                       class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition"
+                       placeholder="110111" maxlength="20">
+              </div>
+            </div>
+          </div>
+
+          <div id="transferenciaForm" style="display: none;" class="space-y-4 p-6 bg-gray-50 rounded-lg border-2 border-red-200">
+            <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <i class="fas fa-university text-red-500"></i> Datos de la Transferencia
+            </h4>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                <i class="fas fa-bank text-gray-600 mr-1"></i> Banco
+              </label>
+              <input type="text" name="banco" id="banco" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition"
+                     placeholder="Banco de ejemplo" maxlength="100">
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                <i class="fas fa-hashtag text-gray-600 mr-1"></i> Número de Cuenta
+              </label>
+              <input type="text" name="numero_cuenta" id="numero_cuenta" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition font-mono"
+                     placeholder="1234567890" maxlength="30" inputmode="numeric">
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                <i class="fas fa-user text-gray-600 mr-1"></i> Titular de la Cuenta
+              </label>
+              <input type="text" name="titular_cuenta" id="titular_cuenta" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition"
+                     placeholder="Nombre del titular" maxlength="100">
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                <i class="fas fa-receipt text-gray-600 mr-1"></i> Referencia de Transferencia
+              </label>
+              <input type="text" name="referencia_transferencia" id="referencia_transferencia" 
+                     class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-red-500 focus:ring-2 focus:ring-red-100 transition"
+                     placeholder="Ej. 2026-TRX-1234" maxlength="50">
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="w-full mt-8 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 rounded-xl transition transform hover:scale-105 shadow-lg flex items-center justify-center gap-3 text-lg">
+            <i class="fas fa-lock"></i> Procesar Pago Seguro
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  let carritoData = null;
+  
+  // Datos del cliente
+  let datosCliente = {};
+  try {
+    datosCliente = JSON.parse('{{ datos_cliente|escapejs }}');
+  } catch (e) {
+    console.warn('No se pudieron cargar los datos del cliente:', e);
+    datosCliente = {};
+  }
+  
+  console.log("Datos del cliente cargados:", datosCliente);
+
+  function cargarCarrito() {
+    const carritoJSON = localStorage.getItem('carritoCompra');
+    console.log("====== CARGAR CARRITO ======");
+    console.log("localStorage.carritoCompra:", carritoJSON ? carritoJSON.substring(0, 150) + "..." : "NADA EN LOCALSTORAGE");
+    
+    if (carritoJSON) {
+      try {
+        carritoData = JSON.parse(carritoJSON);
+        console.log("✅ Carrito parseado:", {
+          items: carritoData.items?.length || 0,
+          total: carritoData.total || 0,
+          fecha: carritoData.fecha
+        });
+        mostrarCarrito();
+        return true;
+      } catch (e) {
+        console.error('❌ Error al parsear carrito:', e);
+      }
+    } else {
+      console.log("⚠️ No hay carrito en localStorage");
+    }
+    return false;
+  }
+
+  function mostrarCarrito() {
+    if (!carritoData || !carritoData.items) {
+      return;
+    }
+
+    // Mostrar sección de carrito, ocultar pedidos
+    document.getElementById('carritoSection').style.display = 'block';
+    document.getElementById('pedidosSection').style.display = 'none';
+    document.getElementById('pedidoSelectSection').style.display = 'none';
+    document.getElementById('totalSection').style.display = 'block';
+
+    // Si hay items, mostrar tabla
+    if (carritoData.items.length > 0) {
+      const itemsHTML = carritoData.items.map(item => `
+        <div class="bg-white rounded-xl shadow p-6 card-hover product-card flex gap-4">
+          <div class="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+            <img src="${item.imagen || '/static/placeholder.png'}" alt="${item.nombre}" 
+                 class="w-full h-full object-cover" onerror="this.src='/static/placeholder.png'">
+          </div>
+          <div class="flex-1">
+            <h3 class="font-bold text-gray-900 text-lg">${item.nombre}</h3>
+            <p class="text-gray-600 text-sm mt-1">SKU: ${item.id}</p>
+            <div class="flex items-center gap-4 mt-3">
+              <div>
+            <span class="text-2xl font-bold text-red-500">$${parseFloat(item.precio).toFixed(2)}</span>
+                <span class="text-xs text-gray-500 ml-2">c/u</span>
+              </div>
+              <div class="bg-gray-100 px-4 py-2 rounded-lg font-bold text-gray-700">
+                Cantidad: ${item.cantidad}
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-600 mb-1">Subtotal</p>
+            <p class="text-2xl font-bold text-gray-900">$${(item.precio * item.cantidad).toFixed(2)}</p>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('carritoItems').innerHTML = itemsHTML;
+    }
+
+    // IMPORTANTE: Siempre llenar carrito_json, incluso si items está vacío
+    const total = carritoData.total || 0;
+    document.getElementById('totalDisplay').textContent = parseFloat(total).toFixed(2);
+    document.getElementById('monto_display').value = parseFloat(total).toFixed(2);
+    document.getElementById('monto').value = parseFloat(total).toFixed(2);
+    document.getElementById('carrito_json').value = JSON.stringify(carritoData);
+    
+    console.log("DEBUG - Carrito cargado y JSON seteado:", document.getElementById('carrito_json').value.substring(0, 100));
+  }
+
+  function seleccionarMetodo(element, metodo) {
+    document.querySelectorAll('.method-card').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+    document.querySelector(`input[value="${metodo}"]`).checked = true;
+    
+    const tarjetaForm = document.getElementById('tarjetaForm');
+    const transferenciaForm = document.getElementById('transferenciaForm');
+    if (metodo === 'tarjeta') {
+      tarjetaForm.style.display = 'block';
+      transferenciaForm.style.display = 'none';
+    } else if (metodo === 'transferencia') {
+      transferenciaForm.style.display = 'block';
+      tarjetaForm.style.display = 'none';
+      // Generar referencia automática para transferencia
+      generarReferenciaTransferencia();
+    } else {
+      tarjetaForm.style.display = 'none';
+      transferenciaForm.style.display = 'none';
+    }
+  }
+
+  function seleccionarPedido(element, pedidoId, monto) {
+    document.getElementById('pedido_id').value = pedidoId;
+    document.getElementById('monto').value = monto;
+    document.getElementById('monto_display').value = monto;
+    document.getElementById('carrito_json').value = '';
+    document.querySelectorAll('[onclick*="seleccionarPedido"]').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+  }
+
+  // Función para generar referencia automática de transferencia
+  function generarReferenciaTransferencia() {
+    const referenciaInput = document.getElementById('referencia_transferencia');
+    if (referenciaInput && !referenciaInput.value) {
+      // Generar referencia con formato: TRX-YYYY-AñoMesDia-HoraMinutoSegundo-Random
+      const ahora = new Date();
+      const año = ahora.getFullYear();
+      const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+      const dia = String(ahora.getDate()).padStart(2, '0');
+      const hora = String(ahora.getHours()).padStart(2, '0');
+      const minuto = String(ahora.getMinutes()).padStart(2, '0');
+      const segundo = String(ahora.getSeconds()).padStart(2, '0');
+      const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      const referencia = `TRX-${año}${mes}${dia}-${hora}${minuto}${segundo}-${random}`;
+      referenciaInput.value = referencia;
+    }
+  }
+
+  document.getElementById('pedido_id')?.addEventListener('change', function() {
+    const selected = this.options[this.selectedIndex];
+    if (selected.dataset.monto) {
+      document.getElementById('monto').value = selected.dataset.monto;
+      document.getElementById('monto_display').value = selected.dataset.monto;
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    console.log("====== DOMContentLoaded - Inicializando página ======");
+    if (!cargarCarrito()) {
+      console.log("📋 Modo: Pedidos - No hay carrito en localStorage");
+      document.getElementById('carritoSection').style.display = 'none';
+      document.getElementById('pedidosSection').style.display = 'block';
+      document.getElementById('pedidoSelectSection').style.display = 'block';
+      document.getElementById('totalSection').style.display = 'none';
+    } else {
+      console.log("🛒 Modo: Carrito - Carrito cargado desde localStorage");
+    }
+    
+    // Llenar campos predeterminados con datos del cliente
+    llenarDatosCliente();
+    
+    // Agregar listeners a los radio buttons de método de pago
+    document.querySelectorAll('input[name="metodo"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        const tarjetaForm = document.getElementById('tarjetaForm');
+        const transferenciaForm = document.getElementById('transferenciaForm');
+        if (this.value === 'tarjeta') {
+          tarjetaForm.style.display = 'block';
+          transferenciaForm.style.display = 'none';
+        } else if (this.value === 'transferencia') {
+          transferenciaForm.style.display = 'block';
+          tarjetaForm.style.display = 'none';
+          // Generar referencia automática para transferencia
+          generarReferenciaTransferencia();
+        } else {
+          tarjetaForm.style.display = 'none';
+          transferenciaForm.style.display = 'none';
+        }
+      });
+    });
+    
+    // Agregar listener al botón submit
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function(e) {
+        console.log("🖱️ CLICK en botón Submit detectado");
+      });
+    }
+    
+    console.log("====== DOMContentLoaded - Completado ======");
+  });
+
+  // Función para llenar datos del cliente
+  function llenarDatosCliente() {
+    if (!datosCliente) return;
+    
+    // Llenar nombre titular con nombre y apellido combinados
+    if (datosCliente.nombre || datosCliente.apellido) {
+      const nombreCompleto = `${datosCliente.nombre || ''} ${datosCliente.apellido || ''}`.trim();
+      const nombreTitularInput = document.getElementById('nombre_titular');
+      if (nombreTitularInput) {
+        nombreTitularInput.value = nombreCompleto;
+      }
+    }
+    
+    // Llenar dirección
+    if (datosCliente.direccion) {
+      const direccionInput = document.getElementById('direccion');
+      if (direccionInput) {
+        direccionInput.value = datosCliente.direccion;
+      }
+    }
+    
+    // Llenar ciudad
+    if (datosCliente.ciudad) {
+      const ciudadInput = document.getElementById('ciudad');
+      if (ciudadInput) {
+        ciudadInput.value = datosCliente.ciudad;
+      }
+    }
+    
+    // Llenar código postal
+    if (datosCliente.codigo_postal) {
+      const codigoPostalInput = document.getElementById('codigo_postal');
+      if (codigoPostalInput) {
+        codigoPostalInput.value = datosCliente.codigo_postal;
+      }
+    }
+    
+    console.log("✅ Datos del cliente cargados en formulario");
+  }
+
+  function validarFormulario(event) {
+    const carritoJson = document.getElementById('carrito_json').value;
+    const pedidoId = document.getElementById('pedido_id').value;
+    const monto = document.getElementById('monto').value;
+    const metodo = document.querySelector('input[name="metodo"]:checked')?.value;
+
+    console.log("====== VALIDACIÓN FORM START ======");
+    console.log("carrito_json:", carritoJson ? carritoJson.substring(0, 100) + "..." : "VACÍO");
+    console.log("pedido_id:", pedidoId);
+    console.log("monto:", monto);
+    console.log("metodo:", metodo);
+
+    if (!monto) {
+      alert('Por favor ingresa el monto');
+      event.preventDefault();
+      return false;
+    }
+
+    if (!metodo) {
+      alert('Por favor selecciona un método de pago');
+      event.preventDefault();
+      return false;
+    }
+
+    if (!carritoJson && !pedidoId) {
+      alert('No hay carrito ni pedido seleccionado');
+      event.preventDefault();
+      return false;
+    }
+
+    // Validar tarjeta si es método de pago
+    if (metodo === 'tarjeta') {
+      const nombreTitular = document.getElementById('nombre_titular').value.trim();
+      const numeroTarjeta = document.getElementById('numero_tarjeta').value.replace(/\s/g, '');
+      const vencimiento = document.getElementById('vencimiento').value.trim();
+      const cvv = document.getElementById('cvv').value.trim();
+
+      if (!nombreTitular) {
+        alert('Por favor ingresa el nombre del titular');
+        event.preventDefault();
+        return false;
+      }
+
+      if (nombreTitular.length < 3) {
+        alert('El nombre debe tener al menos 3 caracteres');
+        event.preventDefault();
+        return false;
+      }
+
+      if (!numeroTarjeta || numeroTarjeta.length < 13) {
+        alert('Por favor ingresa un número de tarjeta válido (mínimo 13 dígitos)');
+        event.preventDefault();
+        return false;
+      }
+
+      if (!validarNumeroTarjeta(numeroTarjeta)) {
+        alert('El número de tarjeta no es válido');
+        event.preventDefault();
+        return false;
+      }
+
+      if (!vencimiento || !vencimiento.includes('/')) {
+        alert('Por favor ingresa la fecha de vencimiento en formato MM/YY');
+        event.preventDefault();
+        return false;
+      }
+
+      if (!cvv || cvv.length < 3) {
+        alert('Por favor ingresa un CVV válido');
+        event.preventDefault();
+        return false;
+      }
+    }
+    
+    if (metodo === 'transferencia') {
+      const banco = document.getElementById('banco').value.trim();
+      const numeroCuenta = document.getElementById('numero_cuenta').value.trim();
+      const titularCuenta = document.getElementById('titular_cuenta').value.trim();
+      const referencia = document.getElementById('referencia_transferencia').value.trim();
+
+      if (!banco) {
+        alert('Por favor ingresa el banco');
+        event.preventDefault();
+        return false;
+      }
+
+      if (!numeroCuenta || numeroCuenta.length < 6) {
+        alert('Por favor ingresa un número de cuenta válido');
+        event.preventDefault();
+        return false;
+      }
+
+      if (!titularCuenta) {
+        alert('Por favor ingresa el titular de la cuenta');
+        event.preventDefault();
+        return false;
+      }
+
+      if (!referencia) {
+        alert('Por favor ingresa la referencia de la transferencia');
+        event.preventDefault();
+        return false;
+      }
+    }
+
+    console.log("✅ Validación PASADA - Form será enviado");
+    console.log("====== VALIDACIÓN FORM END ======");
+    return true;
+  }
+
+  // Validar número de tarjeta usando algoritmo de Luhn
+  function validarNumeroTarjeta(numero) {
+    const regex = /^[0-9]{13,19}$/;
+    if (!regex.test(numero)) return false;
+
+    let suma = 0;
+    let esSegundo = false;
+    for (let i = numero.length - 1; i >= 0; i--) {
+      let digito = parseInt(numero.charAt(i), 10);
+
+      if (esSegundo) {
+        digito *= 2;
+        if (digito > 9) {
+          digito -= 9;
+        }
+      }
+
+      suma += digito;
+      esSegundo = !esSegundo;
+    }
+
+    return suma % 10 === 0;
+  }
+
+  // Formatear número de tarjeta
+  document.getElementById('numero_tarjeta')?.addEventListener('input', function(e) {
+    const valor = this.value.replace(/\s/g, '').replace(/[^\d]/g, '');
+    const partes = valor.match(/.{1,4}/g) || [];
+    this.value = partes.join(' ');
+  });
+
+  // Formatear vencimiento MM/YY
+  document.getElementById('vencimiento')?.addEventListener('input', function(e) {
+    let valor = this.value.replace(/[^\d]/g, '');
+    if (valor.length >= 2) {
+      valor = valor.substring(0, 2) + '/' + valor.substring(2, 4);
+    }
+    this.value = valor;
+  });
+
+  // Solo números en CVV
+  document.getElementById('cvv')?.addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^\d]/g, '').substring(0, 4);
+  });
+</script>
+
+</body>
+</html>

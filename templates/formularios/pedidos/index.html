@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Pedidos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<div class="container mx-auto px-6 py-8">
+  <!-- Header -->
+  <div class="mb-8">
+    <a href="/dashboard/home/" 
+       class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg shadow hover:shadow-md transition">
+      <i class="fas fa-arrow-left mr-2"></i> Volver al Dashboard
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg p-8">
+    <div class="flex items-center gap-4 mb-6">
+      <div class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-lg">
+        <i class="fas fa-clipboard-list text-3xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Gestión de Pedidos</h1>
+        <p class="text-gray-600">Administra y supervisa los pedidos del sistema</p>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    {% if success %}
+    <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded mb-6 flex items-center gap-3">
+      <i class="fas fa-check-circle text-xl"></i>
+      <span>{{ success }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Filtros -->
+    <form method="get" action="/pedidos/" class="bg-gradient-to-r from-gray-50 to-green-50 p-6 rounded-lg mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-gray-800">
+            <i class="fas fa-filter text-green-600"></i> Búsqueda
+          </h3>
+        </div>
+        <a href="/reportes/pedidos/" class="inline-flex items-center gap-2 bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition">
+          <i class="fas fa-file-csv"></i> Reportes
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-info-circle text-green-500"></i> Estado
+          </label>
+          <select name="estado" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            <option value="">Todos</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="procesando">Procesando</option>
+            <option value="completado">Completado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button type="submit" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center gap-2">
+          <i class="fas fa-search"></i> Buscar
+        </button>
+        <a href="/pedidos/" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500 transition flex items-center gap-2">
+          <i class="fas fa-times"></i> Limpiar
+        </a>
+      </div>
+    </form>
+
+    <!-- Tabla -->
+    <div class="overflow-x-auto rounded-lg border border-gray-200 mb-6">
+      {% if not pedidos %}
+      <div class="text-center py-12">
+        <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay pedidos registrados</p>
+      </div>
+      {% else %}
+      <table class="w-full">
+        <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
+          <tr>
+            <th class="p-4 text-left font-semibold text-gray-700">ID</th>
+            <th class="p-4 text-left font-semibold text-gray-700">Cliente</th>
+            <th class="p-4 text-left font-semibold text-gray-700">Estado</th>
+            <th class="p-4 text-left font-semibold text-gray-700">Transportista</th>
+            <th class="p-4 text-left font-semibold text-gray-700">Cambiar Datos</th>
+            <th class="p-4 text-left font-semibold text-gray-700">Fecha</th>
+            <th class="p-4 text-center font-semibold text-gray-700">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pedido in pedidos %}
+          <tr class="border-t hover:bg-green-50 transition">
+            <td class="p-4 text-gray-600">{{ pedido.id }}</td>
+            <td class="p-4 font-medium">{{ pedido.cliente.nombre|default:"---" }}</td>
+            <td class="p-4">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold 
+                {% if pedido.estado == 'pendiente' %}bg-yellow-100 text-yellow-700
+                {% elif pedido.estado == 'procesando' %}bg-blue-100 text-blue-700
+                {% elif pedido.estado == 'completado' %}bg-green-100 text-green-700
+                {% else %}bg-red-100 text-red-700{% endif %}">
+                {{ pedido.estado|title }}
+              </span>
+            </td>
+            <td class="p-4 text-gray-600">{{ pedido.transportista|default:"---" }}</td>
+            <td class="p-4 align-top">
+              <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-sm max-w-full">
+                <form action="/pedidos/{{ pedido.id }}/cambiar_datos/" method="post" class="grid gap-2 md:grid-cols-[1.3fr_1.3fr_0.9fr] items-center">
+                  {% csrf_token %}
+                  <select name="estado" class="border border-gray-300 rounded-lg px-2 py-2 text-xs w-full bg-white" required>
+                    <option value="pendiente" {% if pedido.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option value="procesando" {% if pedido.estado == 'procesando' %}selected{% endif %}>Procesando</option>
+                    <option value="enviado" {% if pedido.estado == 'enviado' %}selected{% endif %}>Enviado</option>
+                    <option value="entregado" {% if pedido.estado == 'entregado' %}selected{% endif %}>Entregado</option>
+                    <option value="cancelado" {% if pedido.estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                  </select>
+                  <select name="transportista" class="border border-gray-300 rounded-lg px-2 py-2 text-xs w-full bg-white">
+                    <option value="" {% if not pedido.transportista %}selected{% endif %}>Transportista</option>
+                    <option value="Coordinadora" {% if pedido.transportista == 'Coordinadora' %}selected{% endif %}>Coordinadora</option>
+                    <option value="Servientrega" {% if pedido.transportista == 'Servientrega' %}selected{% endif %}>Servientrega</option>
+                    <option value="Interrapidísimo" {% if pedido.transportista == 'Interrapidísimo' %}selected{% endif %}>Interrapidísimo</option>
+                    <option value="TCC" {% if pedido.transportista == 'TCC' %}selected{% endif %}>TCC</option>
+                    <option value="Envía" {% if pedido.transportista == 'Envía' %}selected{% endif %}>Envía</option>
+                    <option value="Deprisa" {% if pedido.transportista == 'Deprisa' %}selected{% endif %}>Deprisa</option>
+                    <option value="4-72" {% if pedido.transportista == '4-72' %}selected{% endif %}>4-72</option>
+                    <option value="DHL" {% if pedido.transportista == 'DHL' %}selected{% endif %}>DHL</option>
+                    <option value="FedEx" {% if pedido.transportista == 'FedEx' %}selected{% endif %}>FedEx</option>
+                    <option value="Estafeta" {% if pedido.transportista == 'Estafeta' %}selected{% endif %}>Estafeta</option>
+                  </select>
+                  <button type="submit" class="bg-green-500 text-white px-2 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-[0.15em] hover:bg-green-600 transition">
+                    <i class="fas fa-save mr-1"></i>Actualizar
+                  </button>
+                </form>
+              </div>
+            </td>
+            <td class="p-4 text-gray-600">{{ pedido.fecha_pedido|date:"d/m/Y" }}</td>
+            <td class="p-4 text-center">
+              <div class="flex justify-center gap-2">
+                <a href="/pedidos/{{ pedido.id }}/" 
+                   class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1 text-sm"
+                   title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <a href="/pedidos/{{ pedido.id }}/edit/" 
+                   class="bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 transition flex items-center gap-1 text-sm"
+                   title="Editar">
+                  <i class="fas fa-edit"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+</div></body>
+</html>
+
+    <div class="p-6 sm:p-8">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div class="stat-card bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-xl text-white shadow-lg" style="--bg-color: #fbbf24; --bg-color-hover: #f59e0b;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-white/20 p-3 rounded-lg">
+              <i class="fas fa-clock text-2xl"></i>
+            </div>
+            <div class="text-right">
+              <p class="text-3xl font-bold">{{ pedidos|length }}</p>
+            </div>
+          </div>
+          <p class="text-amber-100 font-medium">Pendientes</p>
+          <p class="text-amber-200 text-sm">Esperando procesamiento</p>
+        </div>
+
+        <div class="stat-card bg-gradient-to-br from-blue-400 to-blue-600 p-6 rounded-xl text-white shadow-lg" style="--bg-color: #60a5fa; --bg-color-hover: #3b82f6;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-white/20 p-3 rounded-lg">
+              <i class="fas fa-cog text-2xl"></i>
+            </div>
+            <div class="text-right">
+              <p class="text-3xl font-bold">{{ pedidos_procesando|length|default:0 }}</p>
+            </div>
+          </div>
+          <p class="text-blue-100 font-medium">Procesando</p>
+          <p class="text-blue-200 text-sm">En preparación</p>
+        </div>
+
+        <div class="stat-card bg-gradient-to-br from-green-400 to-green-600 p-6 rounded-xl text-white shadow-lg" style="--bg-color: #34d399; --bg-color-hover: #10b981;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-white/20 p-3 rounded-lg">
+              <i class="fas fa-check-circle text-2xl"></i>
+            </div>
+            <div class="text-right">
+              <p class="text-3xl font-bold">{{ pedidos_completados|length|default:0 }}</p>
+            </div>
+          </div>
+          <p class="text-green-100 font-medium">Completados</p>
+          <p class="text-green-200 text-sm">Entregados exitosamente</p>
+        </div>
+
+        <div class="stat-card bg-gradient-to-br from-red-400 to-red-600 p-6 rounded-xl text-white shadow-lg" style="--bg-color: #f87171; --bg-color-hover: #ef4444;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-white/20 p-3 rounded-lg">
+              <i class="fas fa-times-circle text-2xl"></i>
+            </div>
+            <div class="text-right">
+              <p class="text-3xl font-bold">{{ pedidos_cancelados|length|default:0 }}</p>
+            </div>
+          </div>
+          <p class="text-red-100 font-medium">Cancelados</p>
+          <p class="text-red-200 text-sm">Órdenes canceladas</p>
+        </div>
+      </div>
+
+      <!-- Filtros Mejorados -->
+      <div class="bg-gradient-to-r from-slate-50 to-gray-50 p-6 rounded-xl mb-8 border border-slate-200">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
+          <div class="flex items-center gap-3">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-2 rounded-lg">
+              <i class="fas fa-filter text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-800">Filtros Avanzados</h3>
+              <p class="text-gray-600 text-sm">Encuentra pedidos específicos rápidamente</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <a href="/reportes/pedidos/" class="inline-flex items-center gap-2 bg-gradient-to-r from-slate-600 to-slate-700 text-white px-4 py-2 rounded-lg hover:from-slate-700 hover:to-slate-800 transition-all shadow-lg">
+              <i class="fas fa-file-pdf"></i>
+              <span class="hidden sm:inline">Reportes</span>
+            </a>
+            <button type="button" onclick="toggleView()" class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg" id="viewToggle">
+              <i class="fas fa-th-large"></i>
+              <span class="hidden sm:inline">Vista: Tarjetas</span>
+            </button>
+          </div>
+        </div>
+
+        <form method="get" action="/pedidos/" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">
+              <i class="fas fa-info-circle text-blue-500 mr-1"></i> Estado
+            </label>
+            <select name="estado" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white shadow-sm">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">⏳ Pendiente</option>
+              <option value="procesando">⚙️ Procesando</option>
+              <option value="enviado">🚚 Enviado</option>
+              <option value="entregado">✅ Entregado</option>
+              <option value="cancelado">❌ Cancelado</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">
+              <i class="fas fa-truck text-green-500 mr-1"></i> Transportista
+            </label>
+            <select name="transportista" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white shadow-sm">
+              <option value="">Todos los transportistas</option>
+              <option value="Coordinadora">🚛 Coordinadora</option>
+              <option value="Servientrega">📦 Servientrega</option>
+              <option value="Interrapidísimo">⚡ Interrapidísimo</option>
+              <option value="TCC">🚚 TCC</option>
+              <option value="Envía">📬 Envía</option>
+              <option value="Deprisa">🏃 Deprisa</option>
+              <option value="4-72">🛩️ 4-72</option>
+              <option value="DHL">📮 DHL</option>
+              <option value="FedEx">✈️ FedEx</option>
+              <option value="Estafeta">📬 Estafeta</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">
+              <i class="fas fa-calendar text-purple-500 mr-1"></i> Desde
+            </label>
+            <input type="date" name="fecha_desde" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white shadow-sm">
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-700">
+              <i class="fas fa-calendar text-purple-500 mr-1"></i> Hasta
+            </label>
+            <input type="date" name="fecha_hasta" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-white shadow-sm">
+          </div>
+
+          <div class="md:col-span-2 lg:col-span-4 flex gap-3 mt-4">
+            <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg flex items-center gap-2 font-medium">
+              <i class="fas fa-search"></i> Buscar Pedidos
+            </button>
+            <a href="/pedidos/" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all shadow-lg flex items-center gap-2 font-medium">
+              <i class="fas fa-times"></i> Limpiar Filtros
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Vista de Tarjetas Mejorada -->
+      <div id="cardsView" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% if not pedidos %}
+        <div class="col-span-full text-center py-16">
+          <div class="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+            <i class="fas fa-inbox text-4xl text-gray-400"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-700 mb-2">No hay pedidos</h3>
+          <p class="text-gray-500">No se encontraron pedidos con los filtros aplicados.</p>
+        </div>
+        {% else %}
+        {% for pedido in pedidos %}
+        <div class="pedido-card bg-white rounded-xl shadow-md overflow-hidden fade-in">
+          <!-- Header del pedido con gradiente -->
+          <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-4 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+            <div class="relative z-10">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-lg">#{{ pedido.numero_pedido|default:pedido.id }}</h3>
+                <span class="status-badge px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
+                  {% if pedido.estado == 'pendiente' %}bg-amber-100 text-amber-800
+                  {% elif pedido.estado == 'procesando' %}bg-blue-100 text-blue-800
+                  {% elif pedido.estado == 'enviado' %}bg-purple-100 text-purple-800
+                  {% elif pedido.estado == 'entregado' %}bg-green-100 text-green-800
+                  {% else %}bg-red-100 text-red-800{% endif %}">
+                  {% if pedido.estado == 'pendiente' %}⏳{% elif pedido.estado == 'procesando' %}⚙️{% elif pedido.estado == 'enviado' %}🚚{% elif pedido.estado == 'entregado' %}✅{% else %}❌{% endif %}
+                  {{ pedido.estado|title }}
+                </span>
+              </div>
+              <p class="text-blue-100 text-sm flex items-center gap-2">
+                <i class="fas fa-calendar"></i>
+                {{ pedido.fecha_creacion|date:"d/m/Y H:i" }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Contenido del pedido -->
+          <div class="p-6">
+            <div class="space-y-4">
+              <!-- Cliente -->
+              <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div class="bg-gradient-to-br from-green-400 to-green-500 p-2 rounded-lg">
+                  <i class="fas fa-user text-white"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-800">{{ pedido.cliente.nombre|default:"---" }} {{ pedido.cliente.apellido|default:"" }}</p>
+                  <p class="text-sm text-gray-600 flex items-center gap-1">
+                    <i class="fas fa-envelope text-gray-400"></i>
+                    {{ pedido.cliente.usuario.email|default:"---" }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Total con diseño mejorado -->
+              <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                <div class="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-lg">
+                  <i class="fas fa-dollar-sign text-white text-lg"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-3xl font-bold text-green-700">${{ pedido.total }}</p>
+                  <p class="text-sm text-green-600">Total del pedido</p>
+                </div>
+              </div>
+
+              <!-- Transportista -->
+              {% if pedido.transportista %}
+              <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-lg">
+                  <i class="fas fa-truck text-white"></i>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-800">{{ pedido.transportista }}</p>
+                  <p class="text-sm text-blue-600">Transportista asignado</p>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Dirección de envío -->
+              {% if pedido.direccion_envio %}
+              <div class="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-2 rounded-lg mt-1">
+                  <i class="fas fa-map-marker-alt text-white"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm text-gray-700 font-medium">{{ pedido.direccion_envio }}</p>
+                  <p class="text-sm text-purple-600">{{ pedido.ciudad_envio }}{% if pedido.codigo_postal_envio %}, {{ pedido.codigo_postal_envio }}{% endif %}</p>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Acciones Mejoradas -->
+            <div class="mt-6 pt-4 border-t border-gray-200">
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <a href="/pedidos/{{ pedido.id }}/"
+                   class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg text-center font-medium flex items-center justify-center gap-2">
+                  <i class="fas fa-eye"></i>
+                  <span class="hidden sm:inline">Ver</span>
+                </a>
+                <a href="/pedidos/{{ pedido.id }}/edit/"
+                   class="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-3 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg text-center font-medium flex items-center justify-center gap-2">
+                  <i class="fas fa-edit"></i>
+                  <span class="hidden sm:inline">Editar</span>
+                </a>
+              </div>
+
+              <!-- Formulario de cambio rápido mejorado -->
+              <div class="bg-gradient-to-r from-gray-50 to-slate-50 p-4 rounded-lg border border-gray-200">
+                <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                  <i class="fas fa-tools text-blue-500"></i>
+                  Actualización Rápida
+                </h4>
+                <form action="/pedidos/{{ pedido.id }}/cambiar_datos/" method="post" class="space-y-3">
+                  {% csrf_token %}
+                  <div class="grid grid-cols-2 gap-2">
+                    <select name="estado" class="border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                      <option value="pendiente" {% if pedido.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                      <option value="procesando" {% if pedido.estado == 'procesando' %}selected{% endif %}>Procesando</option>
+                      <option value="enviado" {% if pedido.estado == 'enviado' %}selected{% endif %}>Enviado</option>
+                      <option value="entregado" {% if pedido.estado == 'entregado' %}selected{% endif %}>Entregado</option>
+                      <option value="cancelado" {% if pedido.estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                    </select>
+                    <select name="transportista" class="border border-gray-300 rounded-lg px-3 py-2 text-xs bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                      <option value="" {% if not pedido.transportista %}selected{% endif %}>Transportista</option>
+                      <option value="Coordinadora" {% if pedido.transportista == 'Coordinadora' %}selected{% endif %}>Coordinadora</option>
+                      <option value="Servientrega" {% if pedido.transportista == 'Servientrega' %}selected{% endif %}>Servientrega</option>
+                      <option value="Interrapidísimo" {% if pedido.transportista == 'Interrapidísimo' %}selected{% endif %}>Interrapidísimo</option>
+                      <option value="TCC" {% if pedido.transportista == 'TCC' %}selected{% endif %}>TCC</option>
+                      <option value="Envía" {% if pedido.transportista == 'Envía' %}selected{% endif %}>Envía</option>
+                      <option value="Deprisa" {% if pedido.transportista == 'Deprisa' %}selected{% endif %}>Deprisa</option>
+                      <option value="4-72" {% if pedido.transportista == '4-72' %}selected{% endif %}>4-72</option>
+                      <option value="DHL" {% if pedido.transportista == 'DHL' %}selected{% endif %}>DHL</option>
+                      <option value="FedEx" {% if pedido.transportista == 'FedEx' %}selected{% endif %}>FedEx</option>
+                      <option value="Estafeta" {% if pedido.transportista == 'Estafeta' %}selected{% endif %}>Estafeta</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-save"></i>
+                    <span>Actualizar</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      <!-- Vista de Tabla (Oculta por defecto) -->
+      <div id="tableView" class="hidden overflow-x-auto rounded-lg border border-gray-200 mb-6 bg-white">
+        {% if not pedidos %}
+        <div class="text-center py-12">
+          <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500 text-lg">No hay pedidos registrados</p>
+        </div>
+        {% else %}
+        <table class="w-full">
+          <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
+            <tr>
+              <th class="p-4 text-left font-semibold text-gray-700">ID</th>
+              <th class="p-4 text-left font-semibold text-gray-700">Cliente</th>
+              <th class="p-4 text-left font-semibold text-gray-700">Estado</th>
+              <th class="p-4 text-left font-semibold text-gray-700">Transportista</th>
+              <th class="p-4 text-left font-semibold text-gray-700">Total</th>
+              <th class="p-4 text-left font-semibold text-gray-700">Fecha</th>
+              <th class="p-4 text-center font-semibold text-gray-700">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pedido in pedidos %}
+            <tr class="border-t hover:bg-green-50 transition">
+              <td class="p-4 text-gray-600 font-medium">{{ pedido.id }}</td>
+              <td class="p-4 font-medium">{{ pedido.cliente.nombre|default:"---" }}</td>
+              <td class="p-4">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                  {% if pedido.estado == 'pendiente' %}bg-yellow-100 text-yellow-700
+                  {% elif pedido.estado == 'procesando' %}bg-blue-100 text-blue-700
+                  {% elif pedido.estado == 'enviado' %}bg-purple-100 text-purple-700
+                  {% elif pedido.estado == 'entregado' %}bg-green-100 text-green-700
+                  {% else %}bg-red-100 text-red-700{% endif %}">
+                  {{ pedido.estado|title }}
+                </span>
+              </td>
+              <td class="p-4 text-gray-600">{{ pedido.transportista|default:"---" }}</td>
+              <td class="p-4 font-bold text-green-600">${{ pedido.total }}</td>
+              <td class="p-4 text-gray-600">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+              <td class="p-4 text-center">
+                <div class="flex justify-center gap-2">
+                  <a href="/pedidos/{{ pedido.id }}/"
+                     class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1 text-sm"
+                     title="Ver detalles">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a href="/pedidos/{{ pedido.id }}/edit/"
+                     class="bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 transition flex items-center gap-1 text-sm"
+                     title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleView() {
+  const cardsView = document.getElementById('cardsView');
+  const tableView = document.getElementById('tableView');
+  const toggleBtn = document.getElementById('viewToggle');
+
+  if (cardsView.classList.contains('hidden')) {
+    // Mostrar tarjetas
+    cardsView.classList.remove('hidden');
+    tableView.classList.add('hidden');
+    toggleBtn.innerHTML = '<i class="fas fa-th-large"></i> <span class="hidden sm:inline">Vista: Tarjetas</span>';
+  } else {
+    // Mostrar tabla
+    cardsView.classList.add('hidden');
+    tableView.classList.remove('hidden');
+    toggleBtn.innerHTML = '<i class="fas fa-table"></i> <span class="hidden sm:inline">Vista: Tabla</span>';
+  }
+}
+
+// Animación de entrada para las tarjetas
+document.addEventListener('DOMContentLoaded', function() {
+  const cards = document.querySelectorAll('.pedido-card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = `${index * 0.1}s`;
+  });
+});
+</script>
+
+</body>
+</html>

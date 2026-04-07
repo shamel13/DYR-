@@ -1,0 +1,286 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.9);} to { opacity: 1; transform: scale(1);} }
+    .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- NAVBAR -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4 flex flex-wrap items-center justify-between">
+      <a href="/pagina/index" class="text-2xl font-bold text-red-500 flex items-center gap-2">
+        <i class="fas fa-tshirt"></i>
+        <span>DYR</span>
+      </a>
+
+      <button id="menu-toggle" class="md:hidden text-gray-800 focus:outline-none"><i class="fas fa-bars text-xl"></i></button>
+
+      <ul id="menu" class="hidden md:flex items-center space-x-6 text-gray-700 font-medium">
+        <li><a href="/pagina/index" class="hover:text-red-500 transition">Inicio</a></li>
+        <li><a href="/pagina/catalogo" class="hover:text-red-500 transition">Catálogo</a></li>
+        <li><a href="/pagina/acerca" class="hover:text-red-500 transition">Acerca</a></li>
+        {% if user.is_authenticated %}
+          <li>
+            <button onclick="toggleCart()" class="relative hover:text-red-500 transition">
+              <i class="fas fa-shopping-bag text-xl"></i>
+              <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+            </button>
+          </li>
+          <li class="relative group">
+            <button class="flex items-center space-x-2 text-gray-800 hover:text-red-500 transition">
+              <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">
+                {{ user.username|slice:":1"|upper }}
+              </div>
+              <span class="hidden lg:inline">{{ user.username }}</span>
+              <i class="fas fa-chevron-down text-sm"></i>
+            </button>
+            <ul class="absolute right-0 top-full pt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <li><a href="/auth/profile" class="block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-user mr-2"></i> Perfil</a></li>
+              <li><a href="/auth/logout" class="block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión</a></li>
+            </ul>
+          </li>
+        {% else %}
+          <li><a href="/auth/login" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full transition">Iniciar sesión</a></li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 mt-2 py-4 px-6 space-y-4 text-gray-700 font-medium">
+      <a href="/pagina/index" class="block hover:text-red-500 transition">Inicio</a>
+      <a href="/pagina/catalogo" class="block hover:text-red-500 transition">Catálogo</a>
+      <a href="/pagina/acerca" class="block hover:text-red-500 transition">Acerca</a>
+      {% if user.is_authenticated %}
+        <p class="text-gray-500 text-sm">Hola, {{ user.username }}</p>
+        <a href="/auth/profile" class="block hover:text-red-500 transition"><i class="fas fa-user mr-2"></i> Perfil</a>
+        <a href="/auth/logout" class="block hover:text-red-500 transition"><i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión</a>
+      {% else %}
+        <a href="/auth/login" class="block bg-red-500 hover:bg-red-600 text-white text-center px-5 py-2 rounded-full transition">Iniciar sesión</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    toggle.addEventListener('click', () => { menu.classList.toggle('hidden'); });
+  </script>
+
+  <section class="max-w-7xl mx-auto px-4 py-6">
+    <div class="bg-white shadow rounded-lg p-4">
+      <h2 class="text-lg font-bold text-gray-800 mb-4">Filtros</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">Buscar producto</label><input type="text" id="searchInput" placeholder="Nombre del producto..." class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" onkeyup="aplicarFiltros()"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">Precio mínimo</label><input type="number" id="minPrice" placeholder="$0" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" onchange="aplicarFiltros()"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">Precio máximo</label><input type="number" id="maxPrice" placeholder="$999999" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" onchange="aplicarFiltros()"></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-2">Ordenar por</label><select id="sortBy" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500" onchange="aplicarFiltros()"><option value="">Sin ordenar</option><option value="nombre-asc">Nombre (A-Z)</option><option value="nombre-desc">Nombre (Z-A)</option><option value="precio-asc">Precio (menor a mayor)</option><option value="precio-desc">Precio (mayor a menor)</option></select></div>
+      </div>
+      <div class="mt-4 flex items-center gap-6"><label class="flex items-center gap-2 text-sm"><input type="checkbox" id="filterStock" class="rounded text-red-500" onchange="aplicarFiltros()" checked><span>Solo productos disponibles</span></label><button onclick="limpiarFiltros()" class="text-red-500 hover:text-red-600 text-sm font-medium"><i class="fas fa-times"></i> Limpiar filtros</button><span id="resultCount" class="ml-auto text-sm text-gray-600"></span></div>
+    </div>
+  </section>
+
+  <section id="productos-grid" class="py-12 px-4 max-w-7xl mx-auto grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    {% if productos %}
+      {% for producto in productos %}
+      <div class="product bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition" data-nombre="{{ producto.nombre|lower }}" data-precio="{{ producto.precio }}" data-stock="{{ producto.inventario.cantidad_disponible|default:0 }}">
+        <img class="w-full h-64 object-cover" src="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}https://placehold.co/400x400{% endif %}" onerror="this.src='https://placehold.co/400x400'" alt="{{ producto.nombre }}">
+        <div class="p-4">
+          <h3 class="font-semibold text-lg mb-1">{{ producto.nombre }}</h3>
+          <p class="text-orange-600 font-bold mb-2">${{ producto.precio }}</p>
+          {% if producto.inventario.cantidad_disponible|default:0 > 0 %}
+            <button data-id="{{ producto.id }}" data-nombre="{{ producto.nombre|escapejs }}" data-precio="{{ producto.precio }}" data-imagen="{% if producto.imagen %}{{ producto.imagen.url }}{% else %}https://placehold.co/400x400{% endif %}" data-stock="{{ producto.inventario.cantidad_disponible|default:0 }}" onclick="addToCartFromData(this)" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm w-full">Agregar al carrito</button>
+          {% else %}
+            <span class="text-gray-500 text-sm">Agotado</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-span-full text-center text-gray-600">No hay productos disponibles en el catálogo.</div>
+    {% endif %}
+  </section>
+
+  <!-- Cart panel and modals -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-green-600 text-white py-2 px-4 rounded shadow z-50">Producto agregado al carrito</div>
+
+  <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 animate-fadeIn">
+      <div class="flex items-center justify-center mb-4"><div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center"><i class="fas fa-lock text-red-500 text-3xl"></i></div></div>
+      <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Inicia sesión para continuar</h3>
+      <p class="text-gray-600 text-center mb-6">Debes iniciar sesión para agregar productos al carrito</p>
+      <div class="flex gap-3"><button onclick="closeLoginModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded font-medium transition">Cancelar</button><a href="/auth/login" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-medium text-center transition">Iniciar sesión</a></div>
+    </div>
+  </div>
+
+  <div id="cart-panel" class="cart-panel hidden fixed top-0 right-0 w-96 h-full bg-white shadow-xl z-50 flex flex-col">
+    <div class="flex items-center justify-between p-4 border-b bg-red-500 text-white"><h2 class="text-xl font-bold">🛒 Tu Carrito</h2><button onclick="toggleCart()" class="hover:text-gray-200"><i class="fas fa-times"></i></button></div>
+    <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4"><p class="text-gray-500 text-sm">Tu carrito está vacío.</p></div>
+    <div class="p-4 border-t bg-gray-50"><div class="flex justify-between items-center mb-4"><span class="font-semibold text-lg">Total:</span><span id="cart-total" class="font-bold text-red-600 text-lg">$0</span></div><button onclick="confirmarCompra()" class="block text-center bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded font-medium transition">Continuar con la compra</button></div>
+  </div>
+
+  <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 animate-fadeIn">
+      <div class="flex items-center justify-center mb-4"><div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center"><i class="fas fa-shopping-cart text-green-500 text-3xl"></i></div></div>
+      <h3 class="text-xl font-bold text-center text-gray-800 mb-2">¿Deseas continuar con tu compra?</h3>
+      <p class="text-gray-600 text-center mb-2">Serás redirigido a la pasarela de pago para completar tu compra.</p>
+      <div class="bg-gray-50 rounded-lg p-3 mb-6"><div class="flex justify-between items-center"><span class="text-gray-700 font-medium">Total a pagar:</span><span id="modal-total" class="font-bold text-green-600 text-xl">$0</span></div></div>
+      <div class="flex gap-3"><button onclick="closeConfirmModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded font-medium transition">Cancelar</button><button onclick="irAPasarelaPago()" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium transition">Continuar</button></div>
+    </div>
+  </div>
+
+  <script>
+    const isUserLoggedIn = {{ user.is_authenticated|yesno:"true,false" }};
+    let cart = [];
+    
+    // Cargar carrito desde localStorage al iniciar
+    function cargarCarritoDelStorage() {
+      const carritoGuardado = localStorage.getItem('carritoActual');
+      if (carritoGuardado) {
+        try {
+          cart = JSON.parse(carritoGuardado);
+          updateCart();
+        } catch (e) {
+          console.error('Error al cargar carrito:', e);
+          cart = [];
+        }
+      }
+    }
+    
+    // Guardar carrito en localStorage
+    function guardarCarritoEnStorage() {
+      localStorage.setItem('carritoActual', JSON.stringify(cart));
+    }
+    
+    function toggleCart() { document.getElementById('cart-panel').classList.toggle('hidden'); }
+    function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+    function showLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.add('hidden'); }
+    function irAPasarelaPago() {
+      if (!cart.length) { alert('El carrito está vacío'); return; }
+      const total = cart.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+      const carritoData = { items: cart, total: total, fecha: new Date().toISOString() };
+      localStorage.setItem('carritoCompra', JSON.stringify(carritoData));
+      localStorage.setItem('carritoActual', JSON.stringify([])); // Limpiar carrito
+      closeConfirmModal();
+      window.location.href = '/pagos/nuevo/';
+    }
+    function showToast() { const toast = document.getElementById('toast'); toast.classList.remove('hidden'); setTimeout(()=>toast.classList.add('hidden'), 1500); }
+
+    function aplicarFiltros() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+      const sortBy = document.getElementById('sortBy').value;
+      const filterStock = document.getElementById('filterStock').checked;
+
+      const productos = Array.from(document.querySelectorAll('.product'));
+      let visibles = 0;
+
+      productos.forEach(producto => {
+        const nombre = producto.dataset.nombre.toLowerCase();
+        const precio = parseFloat(producto.dataset.precio);
+        const stock = parseInt(producto.dataset.stock, 10);
+
+        let visible = true;
+        if (searchTerm && !nombre.includes(searchTerm)) visible = false;
+        if (precio < minPrice || precio > maxPrice) visible = false;
+        if (filterStock && stock <= 0) visible = false;
+
+        producto.style.display = visible ? 'block' : 'none';
+        if (visible) visibles++;
+      });
+
+      const grid = document.getElementById('productos-grid');
+      if (sortBy) {
+        const productosArray = Array.from(document.querySelectorAll('.product')).filter(p => p.style.display !== 'none');
+        productosArray.sort((a,b) => {
+          const nombreA = a.dataset.nombre, nombreB = b.dataset.nombre;
+          const precioA = parseFloat(a.dataset.precio), precioB = parseFloat(b.dataset.precio);
+          switch (sortBy) {
+            case 'nombre-asc': return nombreA.localeCompare(nombreB);
+            case 'nombre-desc': return nombreB.localeCompare(nombreA);
+            case 'precio-asc': return precioA - precioB;
+            case 'precio-desc': return precioB - precioA;
+            default: return 0;
+          }
+        });
+        productosArray.forEach(producto => grid.appendChild(producto));
+      }
+
+      document.getElementById('resultCount').textContent = `${visibles} producto${visibles !== 1 ? 's' : ''} encontrado${visibles !== 1 ? 's' : ''}`;
+    }
+
+    function limpiarFiltros() { document.getElementById('searchInput').value = ''; document.getElementById('minPrice').value = ''; document.getElementById('maxPrice').value = ''; document.getElementById('sortBy').value = ''; document.getElementById('filterStock').checked = true; aplicarFiltros(); }
+
+    function addToCartFromData(button) {
+      if (!isUserLoggedIn) { showLoginModal(); return; }
+      const id = parseInt(button.dataset.id, 10); const nombre = button.dataset.nombre; const precio = parseFloat(button.dataset.precio); const imagen = button.dataset.imagen; const stock = parseInt(button.dataset.stock, 10);
+      addToCart(id, nombre, precio, imagen, stock);
+    }
+
+    function addToCart(id, nombre, precio, imagen, stock) {
+      const existente = cart.find(item => item.id === id);
+      if (existente) {
+        if (existente.cantidad < stock) { existente.cantidad++; updateCart(); guardarCarritoEnStorage(); showToast(); }
+        else { alert(`No puedes agregar más. Stock disponible: ${stock}`); }
+      } else {
+        cart.push({ id, nombre, precio, imagen, cantidad: 1, stock }); updateCart(); guardarCarritoEnStorage(); showToast();
+      }
+    }
+
+    function updateCart() {
+      const container = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+      if (!cart.length) { container.innerHTML = '<p class="text-gray-500 text-sm">Tu carrito está vacío.</p>'; totalEl.textContent = '$0'; document.getElementById('cart-count').textContent = '0'; return; }
+      let total = 0;
+      container.innerHTML = '';
+      cart.forEach((item, index) => {
+        total += item.precio * item.cantidad;
+        const row = document.createElement('div'); row.className = 'flex items-center justify-between gap-3 p-3 border-b';
+        row.innerHTML = `
+          <div class="flex items-center gap-3 flex-1">
+            <img src="${item.imagen || 'https://placehold.co/400x400?text=Sin+imagen'}" alt="${item.nombre}" class="w-12 h-12 object-cover rounded border">
+            <div class="flex-1">
+              <p class="font-semibold text-sm">${item.nombre}</p>
+              <p class="text-xs text-gray-600">${item.cantidad} x $${item.precio.toFixed(2)}</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="decrementarCantidad(${index})" class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm">-</button>
+            <span class="text-sm font-medium px-2">${item.cantidad}</span>
+            <button onclick="incrementarCantidad(${index})" class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-sm">+</button>
+            <button onclick="eliminarDelCarrito(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm ml-2"><i class="fas fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+      totalEl.textContent = `$${total.toFixed(2)}`;
+      document.getElementById('cart-count').textContent = String(cart.reduce((acc, item) => acc + item.cantidad, 0));
+    }
+
+    function incrementarCantidad(index) { if (cart[index] && cart[index].cantidad < cart[index].stock) { cart[index].cantidad++; updateCart(); guardarCarritoEnStorage(); } }
+    function decrementarCantidad(index) { if (cart[index] && cart[index].cantidad > 1) { cart[index].cantidad--; updateCart(); guardarCarritoEnStorage(); } }
+    function eliminarDelCarrito(index) { 
+      if (cart[index]) { 
+        const nombreProducto = cart[index].nombre;
+        cart.splice(index, 1); 
+        updateCart(); 
+        guardarCarritoEnStorage();
+      } 
+    }
+
+    function confirmarCompra() { if (!cart.length) { return; } document.getElementById('modal-total').textContent = `$${cart.reduce((acc,item)=>acc + item.precio*item.cantidad,0).toFixed(2)}`; document.getElementById('confirmModal').classList.remove('hidden'); }
+
+    window.addEventListener('DOMContentLoaded', () => { cargarCarritoDelStorage(); aplicarFiltros(); });
+  </script>
+</body>
+</html>

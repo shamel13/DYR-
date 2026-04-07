@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle del Pago</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-100 p-6">
+
+<div class="mb-6">
+  <a href="/pagos" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition">
+    ← Volver a Pagos
+  </a>
+</div>
+
+<div class="max-w-4xl mx-auto">
+  <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h1 class="text-2xl font-bold mb-2">Detalle del Pago</h1>
+        <p class="text-gray-600">Referencia: <span class="font-mono font-bold">{{ pago.referencia_transaccion|default:'N/A' }}</span></p>
+      </div>
+      <div>
+        {% if pago.estado == 'pendiente' %}
+          <span class="px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg">⏳ Pendiente</span>
+        {% elif pago.estado == 'procesando' %}
+          <span class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg">🔄 Procesando</span>
+        {% elif pago.estado == 'completado' %}
+          <span class="px-3 py-2 bg-green-100 text-green-700 rounded-lg">✓ Completado</span>
+        {% elif pago.estado == 'rechazado' %}
+          <span class="px-3 py-2 bg-red-100 text-red-700 rounded-lg">✗ Rechazado</span>
+        {% elif pago.estado == 'reembolsado' %}
+          <span class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg">↩ Reembolsado</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="bg-blue-50 p-6 rounded-lg mb-6 text-center">
+      <div class="text-sm text-gray-600 mb-2">Monto del Pago</div>
+      <div class="text-4xl font-bold text-blue-600">${{ pago.monto }}</div>
+    </div>
+
+    <div class="mb-6">
+      <h2 class="text-lg font-bold mb-4 pb-2 border-b">Información General</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-gray-600">Pedido</label>
+          <div class="font-medium">{{ pago.pedido.numero_pedido }}</div>
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Cliente</label>
+          <div class="font-medium">{{ pago.pedido.cliente.nombre }}</div>
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Método de Pago</label>
+          <div class="font-medium">{{ pago.get_metodo_display }}</div>
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Fecha de Pago</label>
+          <div class="font-medium">{{ pago.fecha_pago|date:'d/m/Y H:i:s' }}</div>
+        </div>
+        {% if pago.fecha_actualizacion %}
+        <div class="col-span-2">
+          <label class="text-sm text-gray-600">Última Actualización</label>
+          <div class="font-medium">{{ pago.fecha_actualizacion|date:'d/m/Y H:i:s' }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-end pt-4 border-t">
+      {% if pago.estado == 'pendiente' %}
+      <form action="/pagos/{{ pago.id }}/confirmacion/" method="post" class="inline">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-2">
+          <i class="fas fa-check-circle"></i> Procesar Pago
+        </button>
+      </form>
+      {% endif %}
+
+      {% if pago.estado == 'completado' %}
+      <form action="/pagos/{{ pago.id }}/confirmacion/" method="post" class="inline" onsubmit="return confirm('¿Está seguro de reembolsar este pago?');">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-2">
+          <i class="fas fa-undo"></i> Reembolsar
+        </button>
+      </form>
+      {% endif %}
+
+      <form action="/pagos/{{ pago.id }}/delete/" method="post" class="inline" onsubmit="return confirm('¿Eliminar este pago permanentemente?');">
+        {% csrf_token %}
+        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-2">
+          <i class="fas fa-trash"></i> Eliminar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

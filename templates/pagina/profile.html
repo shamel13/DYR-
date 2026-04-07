@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html>
+<html lang='es'>
+<head>
+  <meta charset='UTF-8'/>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+  <title>Perfil - DYR</title>
+  <script src='https://cdn.tailwindcss.com'></script>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'/>
+  <link href='https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap' rel='stylesheet'>
+  <link rel='stylesheet' href='/css/style.css'>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body class='bg-gray-50'>
+
+{% include 'pagina/navbar.html' %}
+
+  <section class='py-20 bg-gradient-to-br from-gray-50 via-red-50 to-gray-100 min-h-screen'>
+    <div class='container mx-auto px-6'>
+      <!-- Header del perfil -->
+      <div class='max-w-5xl mx-auto mb-8'>
+        <div class='bg-gradient-to-r from-red-500 to-red-600 rounded-t-2xl p-8 text-white relative overflow-hidden'>
+          <div class='absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32'></div>
+          <div class='absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24'></div>
+          <div class='relative z-10 flex items-center gap-6'>
+            <div class='w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-xl'>
+              <span class='text-4xl font-bold text-red-500'>{{ user.get_full_name|default:user.username|slice:':1'|upper }}</span>
+            </div>
+            <div>
+              <h1 class='text-3xl font-bold mb-2'>{{ user.get_full_name|default:user.username }}</h1>
+              <p class='text-red-100 flex items-center gap-2'>
+                <i class='fas fa-envelope'></i>
+                <span>{{ user.email }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <div class='max-w-5xl mx-auto'>
+        <form action='/auth/profile/' method='post' class='space-y-6'>
+          {% csrf_token %}
+
+          <!-- Grid de 2 columnas -->
+          <div class='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+            
+            <!-- Información Personal -->
+            <div class='bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.02] transition duration-300'>
+              <div class='flex items-center gap-3 mb-6'>
+                <div class='bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-lg'>
+                  <i class='fas fa-user text-2xl text-white'></i>
+                </div>
+                <h3 class='text-2xl font-bold text-gray-800'>Información Personal</h3>
+              </div>
+              
+              <div class='space-y-4'>
+                <div>
+                  <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                    <i class='fas fa-id-badge text-blue-500 mr-1'></i> Nombre completo
+                  </label>
+                  <input type='text' name='first_name' value='{{ user.first_name }}' required minlength='2'
+                         class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition'/>
+                </div>
+                
+                <div>
+                  <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                    <i class='fas fa-envelope text-blue-500 mr-1'></i> Email
+                  </label>
+                  <input type='email' name='email' value='{{ user.email }}' required
+                         class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition'/>
+                </div>
+                
+                <div>
+                  <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                    <i class='fas fa-phone text-blue-500 mr-1'></i> Teléfono
+                  </label>
+                  <input type='text' name='telefono' value='{{ user.telefono|default:'' }}' pattern='[0-9]{7,10}' maxlength='10'
+                         class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition'/>
+                </div>
+                
+                <div class='grid grid-cols-2 gap-4'>
+                  <div>
+                    <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                      <i class='fas fa-id-card text-blue-500 mr-1'></i> Tipo documento
+                    </label>
+                    <select name='tipo_documento' class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition'>
+                      <option value='CEDULA_CIUDADANIA' {% if user.tipo_documento == 'CEDULA_CIUDADANIA' %}selected{% endif %}>CC</option>
+                      <option value='CEDULA_EXTRANJERIA' {% if user.tipo_documento == 'CEDULA_EXTRANJERIA' %}selected{% endif %}>CE</option>
+                      <option value='PASAPORTE' {% if user.tipo_documento == 'PASAPORTE' %}selected{% endif %}>Pasaporte</option>
+                      <option value='REGISTRO_CIVIL' {% if user.tipo_documento == 'REGISTRO_CIVIL' %}selected{% endif %}>RC</option>
+                      <option value='NIT' {% if user.tipo_documento == 'NIT' %}selected{% endif %}>NIT</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                      <i class='fas fa-hashtag text-blue-500 mr-1'></i> Número
+                    </label>
+                    <input type='text' name='numero_documento' value='{{ user.numero_documento|default:'' }}' pattern='[0-9]{1,10}' maxlength='10'
+                           class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition'/>
+                  </div>
+                </div>
+                
+                <div class='pt-4 border-t border-gray-200'>
+                  <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                    <i class='fas fa-lock text-blue-500 mr-1'></i> Nueva contraseña 
+                    <span class='text-xs font-normal text-gray-500'>(dejar vacío para no cambiar)</span>
+                  </label>
+                  <input type='password' name='new_password' placeholder='••••••••'
+                         class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition'/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dirección -->
+            <div class='bg-white rounded-2xl shadow-xl p-8 transform hover:scale-[1.02] transition duration-300'>
+              <div class='flex items-center gap-3 mb-6'>
+                <div class='bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-lg'>
+                  <i class='fas fa-map-marker-alt text-2xl text-white'></i>
+                </div>
+                <h3 class='text-2xl font-bold text-gray-800'>Dirección</h3>
+              </div>
+              
+              <div class='space-y-4'>
+                <div>
+                  <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                    <i class='fas fa-home text-green-500 mr-1'></i> Dirección completa
+                  </label>
+                  <input type='text' name='direccion' value='{{ user.direccion|default:'' }}' placeholder='Calle, número, apto'
+                         class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition'/>
+                </div>
+                
+                <div>
+                  <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                    <i class='fas fa-map text-green-500 mr-1'></i> Barrio
+                  </label>
+                  <input type='text' name='barrio' value='{{ user.barrio|default:'' }}' placeholder='Nombre del barrio'
+                         class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition'/>
+                </div>
+                
+                <div class='grid grid-cols-2 gap-4'>
+                  <div>
+                    <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                      <i class='fas fa-city text-green-500 mr-1'></i> Ciudad
+                    </label>
+                    <input type='text' name='ciudad' value='{{ user.ciudad|default:'' }}' placeholder='Ciudad'
+                           class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition'/>
+                  </div>
+                  <div>
+                    <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                      <i class='fas fa-mail-bulk text-green-500 mr-1'></i> C. Postal
+                    </label>
+                    <input type='text' name='codigo_postal' value='{{ user.codigo_postal|default:'' }}' placeholder='110111'
+                           class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition'/>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class='block text-sm font-semibold text-gray-700 mb-2'>
+                    <i class='fas fa-globe text-green-500 mr-1'></i> País
+                  </label>
+                  <input type='text' name='pais' value='{{ user.pais|default:'Colombia' }}' placeholder='Colombia'
+                         class='w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition'/>
+                </div>
+
+                <!-- Información adicional -->
+                <div class='mt-6 pt-6 border-t border-gray-200'>
+                  <div class='bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4'>
+                    <div class='flex items-start gap-3'>
+                      <i class='fas fa-info-circle text-green-600 text-xl mt-1'></i>
+                      <div>
+                        <h4 class='font-semibold text-gray-800 mb-1'>Información importante</h4>
+                        <p class='text-sm text-gray-600'>Mantén actualizada tu información de contacto y dirección para un mejor servicio.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class='flex justify-end gap-4 pt-4'>
+            <a href='/pagina/index/' 
+               class='px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition transform hover:scale-105 flex items-center gap-2'>
+              <i class='fas fa-times'></i> Cancelar
+            </a>
+            <button type='submit' 
+                    class='px-8 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-semibold transition transform hover:scale-105 shadow-lg flex items-center gap-2'>
+              <i class='fas fa-save'></i> Guardar cambios
+            </button>
+          </div>
+        </form>
+
+        <!-- Historial de Compras -->
+        <div class='mt-12'>
+          <div class='bg-white rounded-2xl shadow-xl p-8'>
+            <div class='flex items-center gap-3 mb-6'>
+              <div class='bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-lg'>
+                <i class='fas fa-shopping-bag text-2xl text-white'></i>
+              </div>
+              <h3 class='text-2xl font-bold text-gray-800'>Historial de Compras</h3>
+            </div>
+
+            {% if pedidos %}
+              <div class='overflow-x-auto'>
+                <table class='w-full text-sm'>
+                  <thead class='bg-gray-100'>
+                    <tr>
+                      <th class='px-4 py-3 text-left font-semibold text-gray-700'>#Pedido</th>
+                      <th class='px-4 py-3 text-left font-semibold text-gray-700'>Fecha</th>
+                      <th class='px-4 py-3 text-left font-semibold text-gray-700'>Items</th>
+                      <th class='px-4 py-3 text-left font-semibold text-gray-700'>Total</th>
+                      <th class='px-4 py-3 text-left font-semibold text-gray-700'>Estado</th>
+                      <th class='px-4 py-3 text-left font-semibold text-gray-700'>Pago</th>
+                      <th class='px-4 py-3 text-left font-semibold text-gray-700'>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for pedido in pedidos %}
+                      <tr class='border-b hover:bg-gray-50 transition'>
+                        <td class='px-4 py-3 font-semibold text-gray-800'>{{ pedido.numero_pedido }}</td>
+                        <td class='px-4 py-3 text-gray-700'>{{ pedido.fecha_pedido|date:"d/m/Y" }}</td>
+                        <td class='px-4 py-3'>
+                          <span class='inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold'>
+                            {{ pedido.detalles.count }} item{% if pedido.detalles.count != 1 %}s{% endif %}
+                          </span>
+                        </td>
+                        <td class='px-4 py-3 font-bold text-gray-800'>${{ pedido.total }}</td>
+                        <td class='px-4 py-3'>
+                          {% if pedido.estado == 'pendiente' %}
+                            <span class='inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold'>
+                              <i class='fas fa-clock text-xs mr-1'></i> Pendiente
+                            </span>
+                          {% elif pedido.estado == 'procesando' %}
+                            <span class='inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold'>
+                              <i class='fas fa-cog text-xs mr-1'></i> Procesando
+                            </span>
+                          {% elif pedido.estado == 'enviado' %}
+                            <span class='inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold'>
+                              <i class='fas fa-truck text-xs mr-1'></i> Enviado
+                            </span>
+                          {% elif pedido.estado == 'entregado' %}
+                            <span class='inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold'>
+                              <i class='fas fa-check-circle text-xs mr-1'></i> Entregado
+                            </span>
+                          {% elif pedido.estado == 'cancelado' %}
+                            <span class='inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold'>
+                              <i class='fas fa-times-circle text-xs mr-1'></i> Cancelado
+                            </span>
+                          {% endif %}
+                        </td>
+                        <td class='px-4 py-3'>
+                          {% if pedido.pago %}
+                            {% if pedido.pago.estado == 'completado' %}
+                              <span class='inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold'>
+                                <i class='fas fa-check-circle text-xs mr-1'></i> Pagado
+                              </span>
+                            {% else %}
+                              <span class='inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold'>
+                                <i class='fas fa-hourglass text-xs mr-1'></i> Pendiente
+                              </span>
+                            {% endif %}
+                          {% else %}
+                            <span class='text-gray-500 text-xs'>Sin pago</span>
+                          {% endif %}
+                        </td>
+                        <td class='px-4 py-3'>
+                          <a href='/pedidos/{{ pedido.id }}/' class='inline-flex items-center px-3 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded text-xs font-semibold transition'>
+                            <i class='fas fa-eye text-xs mr-1'></i> Ver
+                          </a>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class='text-center py-8'>
+                <i class='fas fa-shopping-cart text-4xl text-gray-300 mb-4'></i>
+                <p class='text-gray-500'>No hay compras registradas aún.</p>
+                <p class='text-sm text-gray-400 mt-2'>Tus futuras compras aparecerán aquí.</p>
+                <a href='/pagina/catalogo' class='inline-flex items-center mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold'>
+                  <i class='fas fa-shopping-bag mr-2'></i> Empezar a comprar
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

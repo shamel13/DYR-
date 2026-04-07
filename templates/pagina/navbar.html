@@ -1,0 +1,62 @@
+<nav class="bg-white shadow-md sticky top-0 z-50">
+  <div class="container mx-auto px-6 py-4 flex flex-wrap items-center justify-between">
+    <a href="/pagina/index" class="text-2xl font-bold text-red-500 flex items-center gap-2">
+      <i class="fas fa-tshirt"></i>
+      <span>DYR</span>
+    </a>
+
+    <button id="menu-toggle" class="md:hidden text-gray-800 focus:outline-none">
+      <i class="fas fa-bars text-xl"></i>
+    </button>
+
+    <ul id="menu" class="hidden md:flex items-center space-x-6 text-gray-700 font-medium">
+      <li><a href="/pagina/index" class="hover:text-red-500 transition">Inicio</a></li>
+      <li><a href="/pagina/catalogo" class="hover:text-red-500 transition">Catálogo</a></li>
+      <li><a href="/pagina/acerca" class="hover:text-red-500 transition">Acerca</a></li>
+      {% if user.is_authenticated %}
+        <li>
+          <button onclick="toggleCart()" class="relative hover:text-red-500 transition">
+            <i class="fas fa-shopping-bag text-xl"></i>
+            <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+          </button>
+        </li>
+        <li class="relative group">
+          <button class="flex items-center space-x-2 text-gray-800 hover:text-red-500 transition">
+            <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">
+              {{ user.username|slice:":1"|upper }}
+            </div>
+            <span class="hidden lg:inline">{{ user.username }}</span>
+            <i class="fas fa-chevron-down text-sm"></i>
+          </button>
+          <ul class="absolute right-0 top-full pt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <li><a href="/auth/profile" class="block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-user mr-2"></i> Perfil</a></li>
+            <li><a href="/auth/logout" class="block px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-500 transition"><i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión</a></li>
+          </ul>
+        </li>
+      {% else %}
+        <li><a href="/auth/login" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full transition">Iniciar sesión</a></li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 mt-2 py-4 px-6 space-y-4 text-gray-700 font-medium">
+    <a href="/pagina/index" class="block hover:text-red-500 transition">Inicio</a>
+    <a href="/pagina/catalogo" class="block hover:text-red-500 transition">Catálogo</a>
+    <a href="/pagina/acerca" class="block hover:text-red-500 transition">Acerca</a>
+    {% if user.is_authenticated %}
+      <p class="text-gray-500 text-sm">Hola, {{ user.username }}</p>
+      <a href="/auth/profile" class="block hover:text-red-500 transition"><i class="fas fa-user mr-2"></i> Perfil</a>
+      <a href="/auth/logout" class="block hover:text-red-500 transition"><i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión</a>
+    {% else %}
+      <a href="/auth/login" class="block bg-red-500 hover:bg-red-600 text-white text-center px-5 py-2 rounded-full transition">Iniciar sesión</a>
+    {% endif %}
+  </div>
+</nav>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  if (toggle && menu) {
+    toggle.addEventListener('click', () => menu.classList.toggle('hidden'));
+  }
+</script>

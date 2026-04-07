@@ -1,0 +1,250 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - DYR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .gradient-card {
+      background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to));
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gray-900 text-white flex flex-col">
+    <div class="p-6 text-2xl font-bold flex items-center gap-2">
+      <i class="fa-solid fa-shirt text-red-500"></i>
+      DYR Admin
+    </div>
+    <nav class="flex-1 px-4 space-y-2">
+      <a href="/clientes" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-user"></i> Listado de Clientes
+      </a>
+      <a href="/productos" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-box-open"></i> Listado de Productos
+      </a>
+      <a href="/inventario" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-warehouse"></i> Listado de Inventario
+      </a>
+      <a href="/pedidos" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-truck"></i> Listado de Pedidos
+      </a>
+      <a href="/ventas" class="block py-2 px-3 rounded hover:bg-gray-700 transition flex items-center gap-2">
+        <i class="fa-solid fa-cash-register"></i> Listado de Ventas
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-gray-700">
+      {% if user.is_authenticated %}
+        <div class="text-sm">
+          <p class="font-semibold text-white mb-1">{{ user.get_full_name|default:user.username }}</p>
+          <p class="text-gray-400 text-xs mb-2">{{ user.email }}</p>
+          <a href="/auth/logout" class="w-full text-left text-red-400 hover:text-red-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+          </a>
+        </div>
+      {% else %}
+        <p class="italic text-gray-400">Usuario invitado</p>
+        <a href="/auth/login" class="text-blue-400 hover:underline">Iniciar sesión</a>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100">
+    {% if user.is_authenticated %}
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+          ¡Bienvenido, <span class="text-red-600">{{ user.get_full_name|default:user.username }}</span>!
+        </h1>
+        <p class="text-gray-600">Panel de Control y Estadísticas del Sistema</p>
+      </div>
+
+      <!-- Mensajes de éxito -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Estadísticas Principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <!-- Clientes -->
+        <div class="gradient-card from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-blue-100 text-sm font-medium mb-1">Total Clientes</p>
+              <p class="text-4xl font-bold">{{ total_clientes|default:0 }}</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-users text-3xl"></i>
+            </div>
+          </div>
+          <a href="/clientes" class="mt-4 inline-block text-sm text-blue-100 hover:text-white">Ver detalles →</a>
+        </div>
+
+        <!-- Productos -->
+        <div class="gradient-card from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-purple-100 text-sm font-medium mb-1">Total Productos</p>
+              <p class="text-4xl font-bold">{{ total_productos|default:0 }}</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-box-open text-3xl"></i>
+            </div>
+          </div>
+          <a href="/productos" class="mt-4 inline-block text-sm text-purple-100 hover:text-white">Ver detalles →</a>
+        </div>
+
+        <!-- Pedidos -->
+        <div class="gradient-card from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-orange-100 text-sm font-medium mb-1">Total Pedidos</p>
+              <p class="text-4xl font-bold">{{ total_pedidos|default:0 }}</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-truck text-3xl"></i>
+            </div>
+          </div>
+          <a href="/pedidos" class="mt-4 inline-block text-sm text-orange-100 hover:text-white">Ver detalles →</a>
+        </div>
+
+        <!-- Total Ventas -->
+        <div class="gradient-card from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-green-100 text-sm font-medium mb-1">Total Ventas</p>
+              <p class="text-4xl font-bold">{{ total_ventas|default:0 }}</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-4 rounded-full">
+              <i class="fa-solid fa-cash-register text-3xl"></i>
+            </div>
+          </div>
+          <a href="/ventas" class="mt-4 inline-block text-sm text-green-100 hover:text-white">Ver detalles →</a>
+        </div>
+
+      </div>
+
+      <!-- Ingresos, Alertas y Gráfica -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Total Ingresos -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="text-lg font-bold text-gray-800 mb-4">Resumen Financiero</h2>
+          <div class="space-y-4">
+            <div class="border-b pb-3">
+              <p class="text-gray-600 text-sm mb-1">Ingresos Totales:</p>
+              <p class="text-2xl font-bold text-green-600">${{ ingresos_ventas|floatformat:2 }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600 text-sm mb-1">Stock bajo:</p>
+              <p class="text-2xl font-bold text-red-600">{{ productos_poco_stock }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfica de Pedidos -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <h2 class="text-lg font-bold text-gray-800 mb-4">Estado de Pedidos</h2>
+          <div class="h-64">
+            <canvas id="pedidosChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Alerta de Stock -->
+        <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-red-500">
+          <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-exclamation-triangle text-red-500"></i>
+            Alerta de Stock
+          </h3>
+          <p class="text-gray-600 text-sm mb-4">
+            {% if productos_poco_stock > 0 %}
+              Hay <strong>{{ productos_poco_stock }}</strong> producto(s) con stock menor a 5 unidades.
+            {% else %}
+              ¡Todos los productos tienen buen stock!
+            {% endif %}
+          </p>
+          <a href="/inventario" class="text-red-500 hover:text-red-700 font-semibold text-sm">
+            Ver inventario →
+          </a>
+        </div>
+      </div>
+
+    {% else %}
+      <div class="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div class="text-center">
+          <h1 class="text-4xl font-bold text-gray-800 mb-4">Acceso Denegado</h1>
+          <p class="text-gray-600 mb-6">Debes iniciar sesión para acceder al dashboard</p>
+          <a href="/auth/login" class="inline-block bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold">
+            Iniciar Sesión →
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </main>
+</div>
+
+<script>
+  // Gráfica de Pedidos por Estado
+  const ctx = document.getElementById('pedidosChart');
+  if (ctx) {
+    const pedidosData = {
+      pendiente: {{ pedidos_pendiente|default:0 }},
+      procesando: {{ pedidos_procesando|default:0 }},
+      enviado: {{ pedidos_enviado|default:0 }},
+      entregado: {{ pedidos_entregado|default:0 }},
+      cancelado: {{ pedidos_cancelado|default:0 }}
+    };
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Pendiente', 'Procesando', 'Enviado', 'Entregado', 'Cancelado'],
+        datasets: [{
+          data: [
+            pedidosData.pendiente,
+            pedidosData.procesando,
+            pedidosData.enviado,
+            pedidosData.entregado,
+            pedidosData.cancelado
+          ],
+          backgroundColor: [
+            '#fbbf24',
+            '#60a5fa',
+            '#a78bfa',
+            '#34d399',
+            '#f87171'
+          ],
+          borderColor: ['#ffffff'],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              font: { size: 12 },
+              padding: 15
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

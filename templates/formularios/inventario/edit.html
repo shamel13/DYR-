@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Inventario</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div class="max-w-4xl mx-auto py-10 px-4">
+  <div class="mb-6">
+    <a href="/inventario" 
+       class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 transition">
+      ← Volver al listado
+    </a>
+  </div>
+
+  <h1 class="text-3xl font-bold text-green-600 mb-6">Editar Inventario</h1>
+
+  {% if success %}
+  <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">
+    <strong>✅ Inventario actualizado</strong>
+  </div>
+  {% endif %}
+
+  <form action="/inventario/{{ inventario.id }}/edit/" method="post" 
+        class="grid md:grid-cols-2 gap-6 bg-white p-6 rounded shadow">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium">Producto</label>
+      <input type="text" value="{{ inventario.producto.nombre }}" class="input-field" readonly>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Cantidad Total</label>
+      <input type="number" name="cantidad_total" value="{{ inventario.cantidad_total }}" class="input-field" required>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Cantidad Disponible</label>
+      <input type="number" name="cantidad_disponible" value="{{ inventario.cantidad_disponible }}" class="input-field" required>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Cantidad Reservada</label>
+      <input type="number" name="cantidad_reservada" value="{{ inventario.cantidad_reservada }}" class="input-field" required>
+    </div>
+
+    <div class="md:col-span-2 text-right space-x-2">
+      <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded">Actualizar</button>
+      <a href="/inventario/{{ inventario.id }}/" class="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 inline-block">
+        Ver detalle
+      </a>
+    </div>
+  </form>
+</div>
+
+<style>
+  .input-field { margin-top:0.25rem; width:100%; border:1px solid #d1d5db; border-radius:0.5rem; padding:0.5rem 1rem; outline:none; }
+  .input-field:focus { border-color:#22c55e; box-shadow:0 0 0 2px rgba(34,197,94,0.3); }
+</style>
+</body>
+</html>

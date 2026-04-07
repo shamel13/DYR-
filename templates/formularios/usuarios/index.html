@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuarios registrados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 text-gray-800">
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <a href="/clientes" class="px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition">← Volver a clientes</a>
+  <h1 class="text-2xl font-bold">Usuarios registrados</h1>
+  <a href="/reportes/usuarios/" class="px-4 py-2 bg-slate-700 text-white rounded-lg shadow hover:bg-slate-800 transition">Reportes</a>
+</div>
+
+<div>
+  {% if success %}
+  <div class="bg-green-100 text-green-700 p-3 rounded mb-4">{{ success }}</div>
+  {% endif %}
+</div>
+
+<div class="bg-white shadow rounded p-4">
+  {% if usuarios %}
+    <table class="w-full text-left">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-2">ID</th>
+          <th class="p-2">Usuario</th>
+          <th class="p-2">Nombre</th>
+          <th class="p-2">Email</th>
+          <th class="p-2">Rol</th>
+          <th class="p-2">Estado</th>
+          <th class="p-2">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr class="border-t">
+          <td class="p-2">{{ u.id }}</td>
+          <td class="p-2">{{ u.username }}</td>
+          <td class="p-2">{{ u.first_name }}</td>
+          <td class="p-2">{{ u.email }}</td>
+          <td class="p-2">{{ u.role|default:'—' }}</td>
+          <td class="p-2">{{ u.estado|default:'—' }}</td>
+          <td class="p-2 space-x-2">
+            <a href="/usuarios/{{ u.id }}/" class="text-blue-600">👁️ Ver</a>
+            <a href="/usuarios/{{ u.id }}/edit/" class="text-green-600">✏️ Editar</a>
+            {% if u.estado == 'activo' %}
+            <form action="/usuarios/{{ u.id }}/toggle/" method="post" class="inline" onsubmit="return confirm('¿Inhabilitar usuario?');">
+              {% csrf_token %}
+              <button type="submit" class="text-red-600">🚫 Inhabilitar</button>
+            </form>
+            {% elif u.estado == 'inactivo' %}
+            <form action="/usuarios/{{ u.id }}/toggle/" method="post" class="inline" onsubmit="return confirm('¿Habilitar usuario?');">
+              {% csrf_token %}
+              <button type="submit" class="text-green-600">✅ Habilitar</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="text-gray-500">Aún no hay usuarios registrados (no se muestran administradores).</div>
+  {% endif %}
+</div>
+</body>
+</html>
